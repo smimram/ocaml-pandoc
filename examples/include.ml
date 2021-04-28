@@ -55,7 +55,7 @@ let () =
             err
       in
       Some [Pandoc.CodeBlock ((ident, classes, keyvals), contents)]
-    | b -> None
+    | _ -> None
   in
   let p = Pandoc.map_blocks f p in
   let s = Yojson.Basic.pretty_to_string (Pandoc.to_json p) in

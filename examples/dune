@@ -1,6 +1,7 @@
 (executable
  (name abbreviations)
  (public_name pandoc-abbreviations)
+ (package pandoc-abbreviations)
  (libraries pandoc)
  (modules abbreviations)
 )
@@ -8,13 +9,23 @@
 (executable
  (name crossref)
  (public_name pandoc-crossref)
+ (package pandoc-crossref)
  (libraries pandoc)
  (modules crossref)
 )
 
 (executable
+ (name include)
+ (public_name pandoc-include)
+ (package pandoc-include)
+ (libraries pandoc)
+ (modules include)
+)
+
+(executable
  (name inspect)
  (public_name pandoc-inspect)
+ (package pandoc-inspect)
  (libraries pandoc)
  (modules inspect)
 )

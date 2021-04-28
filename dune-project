@@ -17,3 +17,43 @@
   (yojson (>= 1.4.0))
  )
 )
+
+(package
+ (name pandoc-abbreviations)
+ (synopsis "Pandoc filter to add non-breaking spaces after abbreviations")
+ (description "This pandoc filter adds non-breaking spaces after the abbreviations listed in the `abbreviations` file")
+ (depends
+  (dune (>= 2.0))
+  (pandoc (>= 0.1.0))
+ )
+)
+
+(package
+ (name pandoc-crossref)
+ (synopsis "Pandoc filter to have LaTeX cross-references")
+ (description "This pandoc filter replaces #chap: and #sec: references to cref invokations")
+ (depends
+  (dune (>= 2.0))
+  (pandoc (>= 0.1.0))
+ )
+)
+
+(package
+ (name pandoc-include)
+ (synopsis "Pandoc filter to include other files")
+ (description "This pandoc filter allows the inclusion of other markdown files into markdown")
+ (depends
+  (dune (>= 2.0))
+  (pandoc (>= 0.1.0))
+ )
+)
+
+(package
+ (name pandoc-inspect)
+ (synopsis "Pandoc filter to inspect pandoc's JSON")
+ (description "This pandoc filter prints pandoc's internal JSON on the standard error")
+ (depends
+  (dune (>= 2.0))
+  (pandoc (>= 0.1.0))
+ )
+)
