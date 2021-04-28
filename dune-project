@@ -2,7 +2,7 @@
 (version 0.1.0)
 (name pandoc)
 (source (github smimram/ocaml-pandoc))
-(license GPL-2.0)
+(license LGPL-2.1)
 (authors "Samuel Mimram <smimram@gmail.com>")
 (maintainers "Samuel Mimram <smimram@gmail.com>")
 
