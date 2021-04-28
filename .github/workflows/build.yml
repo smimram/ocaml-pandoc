@@ -1,0 +1,11 @@
+name: Build
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: sudo apt-get install ocaml-nox libyojson-ocaml-dev
+    - name: Build
+      run: dune build
