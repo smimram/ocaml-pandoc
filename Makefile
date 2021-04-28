@@ -1,4 +1,4 @@
 all: build
 
-build:
+build clean:
 	@dune $@
