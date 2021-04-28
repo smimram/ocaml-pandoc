@@ -45,7 +45,7 @@ and block =
   | RawBlock of format * string
   | UnhandledBlock of Yojson.Basic.t
 
-type t = { blocks : block list; api_version : int list; meta : Yojson.Basic.t }
+type t = { api_version : int list; meta : Yojson.Basic.t; blocks : block list }
 
 module JSON = struct
   let element_type e =
@@ -86,11 +86,11 @@ module JSON = struct
     assert (nd = "Period");
     n, Decimal, Period
 
-  let to_math_type t =
-    match element_type t with
-    | "DisplayMath" -> DisplayMath
-    | "InlineMath" -> InlineMath
-    | _ -> assert false
+  (* let to_math_type t = *)
+    (* match element_type t with *)
+    (* | "DisplayMath" -> DisplayMath *)
+    (* | "InlineMath" -> InlineMath *)
+    (* | _ -> assert false *)
 
   let rec to_inline e =
     match element_type e with
