@@ -11,15 +11,12 @@ Building filters
 
 Basically, a pandoc filter will
 
-1. read JSON data from the standard input with
-  `Yojson.Basic.from_channel`{.ocaml}
-2. convert it to the library's standard representation with
-  `Pandoc.of_json`{.ocaml}
-3. transform it using the `Pandoc.map`{.ocaml} function which recursively maps
-  functions on various elements,
-4. convert the result to JSON with `Pandoc.of_json`{.ocaml},
-5. print the result on the standard output using
-  `Yojson.Basic.to_string`{.ocaml}.
+1. read JSON data from the standard input with `Yojson.Basic.from_channel`,
+2. convert it to the library's standard representation with `Pandoc.of_json`,
+3. transform it using the `Pandoc.map` function which recursively maps functions
+  on various elements,
+4. convert the result to JSON with `Pandoc.of_json`,
+5. print the result on the standard output using `Yojson.Basic.to_string`.
 
 Once you have build your filter (say, `myfilter`) you can use it to transform
 pandoc documents while they are being processed by using the `--filter`
