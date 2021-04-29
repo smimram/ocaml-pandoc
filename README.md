@@ -40,7 +40,7 @@ convenience (or because I needed those).
   play well with other plugins.
 - `pandoc-crossref`: handles cross-references in LaTeX. It replaces references
   of the form `#chap:bla` and `#sec:bli` to `\cref{chap:bla}` and
-  ``cref{sec:bli}` respectively.
+  `\cref{sec:bli}` respectively.
 - `pandoc-include`: includes other documents. It replaces
 
   ```
