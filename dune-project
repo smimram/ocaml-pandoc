@@ -53,3 +53,12 @@
   (pandoc (>= 0.1.0))
  )
 )
+
+(package
+ (name pandoc-pdf2png)
+ (synopsis "Pandoc filter to change extension of pdf images to png")
+ (description "This pandoc filter changes the extension of images from pdf to png.")
+ (depends
+  (pandoc (>= 0.1.0))
+ )
+)

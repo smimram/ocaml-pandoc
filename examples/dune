@@ -29,3 +29,11 @@
  (libraries pandoc)
  (modules inspect)
 )
+
+(executable
+ (name pdf2png)
+ (public_name pandoc-pdf2png)
+ (package pandoc-pdf2png)
+ (libraries pandoc)
+ (modules pdf2png)
+)
