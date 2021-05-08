@@ -1,7 +1,7 @@
 0.1.1 (unreleased)
 =====
 
-- Add `pdf2pdf` and `comment` examples.
+- Add `comment`, `pdf2pdf` and `replace` examples.
 
 0.1.0 (2021-04-28)
 =====

@@ -71,3 +71,12 @@
   (pandoc (>= 0.1.0))
  )
 )
+
+(package
+ (name pandoc-replace)
+ (synopsis "Pandoc filter to replace words")
+ (description "This pandoc filter replaces words by others (useful to ensure that the case is respected for instance).")
+ (depends
+  (pandoc (>= 0.1.0))
+ )
+)

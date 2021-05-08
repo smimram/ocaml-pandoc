@@ -45,3 +45,11 @@
  (libraries pandoc)
  (modules comment)
 )
+
+(executable
+ (name replace)
+ (public_name pandoc-replace)
+ (package pandoc-replace)
+ (libraries pandoc)
+ (modules replace)
+)
