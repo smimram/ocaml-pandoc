@@ -37,3 +37,11 @@
  (libraries pandoc)
  (modules pdf2png)
 )
+
+(executable
+ (name comment)
+ (public_name pandoc-comment)
+ (package pandoc-comment)
+ (libraries pandoc)
+ (modules comment)
+)

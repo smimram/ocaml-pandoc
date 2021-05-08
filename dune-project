@@ -62,3 +62,12 @@
   (pandoc (>= 0.1.0))
  )
 )
+
+(package
+ (name pandoc-comment)
+ (synopsis "Pandoc filter to remove comments")
+ (description "This pandoc filter removes LaTeX-style comments (line starting with %).")
+ (depends
+  (pandoc (>= 0.1.0))
+ )
+)
