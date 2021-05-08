@@ -14,6 +14,9 @@ module String = struct
       raise Not_found
     with Exit -> !ans
 
+  let split_at i s =
+    String.sub s 0 i, String.sub s i (String.length s - i)
+
   let split_on_first_char c s =
     try
       let n = String.index s c in
@@ -47,13 +50,13 @@ let () =
       let s =
         try
           (* Remove trailing punctuation. *)
-          let s =
+          let s, trail =
             try
               let n = String.find (fun c -> List.mem c ['.'; ':'; ','; ';'; '('; ')']) s in
-              String.sub s 0 n
-            with Not_found -> s
+              String.split_at n s
+            with Not_found -> s, ""
           in
-          List.assoc s replacements
+          List.assoc s replacements ^ trail
         with Not_found -> s
       in
       Some [Str s]
