@@ -49,7 +49,7 @@ let () =
           (* Remove trailing punctuation. *)
           let s =
             try
-              let n = String.find (fun c -> List.mem c ['.'; ':'; ','; ';']) s in
+              let n = String.find (fun c -> List.mem c ['.'; ':'; ','; ';'; '('; ')']) s in
               String.sub s 0 n
             with Not_found -> s
           in
