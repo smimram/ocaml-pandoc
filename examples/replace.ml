@@ -24,9 +24,12 @@ module String = struct
     with Not_found -> None
 end
 
+let fname =
+  try Sys.getenv "PANDOC_REPLACE"
+  with Not_found -> "replacements"
+
 (** List of replacements to perform. *)
 let replacements =
-  let fname = "replacements" in
   let ic = open_in fname in
   let n = in_channel_length ic in
   let s = Bytes.create n in

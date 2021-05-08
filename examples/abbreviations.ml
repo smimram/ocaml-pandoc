@@ -4,8 +4,11 @@
 
 open Pandoc
 
+let fname =
+  try Sys.getenv "PANDOC_ABBREVIATIONS"
+  with Not_found -> "abbreviations"
+
 let abbreviations =
-  let fname = "abbreviations" in
   let ic = open_in fname in
   let n = in_channel_length ic in
   let s = Bytes.create n in
