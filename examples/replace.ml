@@ -5,6 +5,15 @@ open Pandoc
 module String = struct
   include String
 
+  let find p s =
+    let ans = ref (-1) in
+    try
+      for i = 0 to String.length s - 1 do
+        if p s.[i] then (ans := i; raise Exit)
+      done;
+      raise Not_found
+    with Exit -> !ans
+
   let split_on_first_char c s =
     try
       let n = String.index s c in
@@ -36,7 +45,15 @@ let () =
   let f = function
     | Str s ->
       let s =
-        try List.assoc s replacements
+        try
+          (* Remove trailing punctuation. *)
+          let s =
+            try
+              let n = String.find (fun c -> List.mem c ['.'; ':'; ','; ';']) s in
+              String.sub s 0 n
+            with Not_found -> s
+          in
+          List.assoc s replacements
         with Not_found -> s
       in
       Some [Str s]
