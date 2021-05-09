@@ -275,21 +275,27 @@ let map ?(block=(fun _ -> None)) ?(inline=(fun _ -> None)) p =
     | None ->
       match b with
       | BulletList l -> [BulletList (List.map map_blocks l)]
+      | CodeBlock _ -> [b]
       | OrderedList (la, l) -> [OrderedList (la, List.map map_blocks l)]
       | Para ii -> [Para (map_inlines ii)]
       | Plain ii -> [Plain (map_inlines ii)]
-      | b -> [b]
+      | RawBlock _ -> [b]
+      | UnhandledBlock _ -> [b]
   and map_inline i =
     match inline i with
     | Some ii -> ii
     | None ->
       match i with
+      | Code _ -> [i]
       | Emph i -> [Emph (map_inlines i)]
       | Image (a, i, t) -> [Image (a, map_inlines i, t)]
       | Link (a, i, t) -> [Link (a, map_inlines i, t)]
       | Quoted (q, i) -> [Quoted (q, map_inlines i)]
+      | RawInline _ -> [i]
       | SmallCaps i -> [SmallCaps (map_inlines i)]
-      | i -> [i]
+      | Space -> [i]
+      | Str _ -> [i]
+      | UnhandledInline _ -> [i]
   and map_blocks bb = List.flatten (List.map map_block bb)
   and map_inlines ii = List.flatten (List.map map_inline ii) in
   replace_blocks map_blocks p
