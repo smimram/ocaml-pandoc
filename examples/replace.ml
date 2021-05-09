@@ -46,6 +46,8 @@ let () =
   prerr_endline ("Replacements:\n" ^ a ^ "\n")
 *)
 
+let re_smallcaps = Str.regexp "^\\[\\(.*\\)\\]{\\.smallcaps}\\([.:,;()]?\\)$"
+
 let () =
   let p = Pandoc.of_json (Yojson.Basic.from_channel stdin) in
   let f = function
@@ -62,7 +64,18 @@ let () =
           List.assoc s replacements ^ trail
         with Not_found -> s
       in
-      Some [Str s]
+      let s =
+        if Str.string_match re_smallcaps s 0 then
+          (* Handle smallcaps. *)
+          let str = Str.matched_group 1 s in
+          let trail =
+            try [Str (Str.matched_group 2 s)]
+            with Not_found -> []
+          in
+          (SmallCaps [Str str])::trail
+        else [Str s]
+      in
+      Some s
     | _ -> None
   in
   let p = Pandoc.map ~inline:f p in

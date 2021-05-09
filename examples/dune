@@ -50,6 +50,6 @@
  (name replace)
  (public_name pandoc-replace)
  (package pandoc-replace)
- (libraries pandoc)
+ (libraries pandoc str)
  (modules replace)
 )

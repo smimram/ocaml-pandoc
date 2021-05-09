@@ -32,6 +32,7 @@ type inline =
   | RawInline of string * string
   (* | SoftBreak *)
   | Space
+  | SmallCaps of inline list
   | Str of string
   | UnhandledInline of Yojson.Basic.t
 
@@ -128,6 +129,7 @@ module JSON = struct
        in
        let l = List.map to_inline (Util.to_list l) in
        Quoted (q, l)
+    | "SmallCaps" -> SmallCaps (List.map to_inline (Util.to_list (element_contents e)))
     (* | "SoftBreak" -> SoftBreak *)
     | "Str" -> Str (Util.to_string (element_contents e))
     | "Space" -> Space
@@ -218,7 +220,8 @@ module JSON = struct
        let i = `List (List.map of_inline i) in
        element "Quoted" (`List [q; i])
     | RawInline (f, s) ->
-       element "RawInline" (`List [`String f; `String s])
+      element "RawInline" (`List [`String f; `String s])
+    | SmallCaps i -> element "SmallCaps" (`List (List.map of_inline i))
     | Space -> element_nc "Space"
     | Str s -> element "Str" (`String s)
     | UnhandledInline i -> i

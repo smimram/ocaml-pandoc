@@ -29,6 +29,7 @@ type inline =
   | Quoted of quote_type * inline list
   | RawInline of string * string
   | Space
+  | SmallCaps of inline list
   | Str of string
   | UnhandledInline of Yojson.Basic.t
 
