@@ -24,6 +24,7 @@ type format = string
 (** Inline elements. *)
 type inline =
   | Code of attr * string
+  | Emph of inline list
   | Image of attr * inline list * target
   | Link of attr * inline list * target
   | Quoted of quote_type * inline list

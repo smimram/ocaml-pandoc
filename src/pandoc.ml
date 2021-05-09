@@ -23,7 +23,7 @@ type quote_type = DoubleQuote | SingleQuote
 
 type inline =
   | Code of attr * string
-  (* | Emph of inline list *)
+  | Emph of inline list
   | Image of attr * inline list * target
   | Link of attr * inline list * target
   (* | Math of math_type * string *)
@@ -100,7 +100,7 @@ module JSON = struct
        let a = to_attr a in
        let c = Util.to_string c in
        Code (a, c)
-    (* | "Emph" -> Emph (List.map to_inline (Util.to_list (element_contents e))) *)
+    | "Emph" -> Emph (List.map to_inline (Util.to_list (element_contents e)))
     | "Image" ->
        let a, i, t = to_triple (element_contents e) in
        let a = to_attr a in
@@ -201,6 +201,9 @@ module JSON = struct
        let a = of_attr a in
        let t = `String t in
        element "Code" (`List [a; t])
+    | Emph i ->
+      let i = List.map of_inline i in
+      element "Emph" (`List i)
     | Image (a, i, t) ->
        let a = of_attr a in
        let i = `List (List.map of_inline i) in
@@ -217,7 +220,8 @@ module JSON = struct
          | DoubleQuote -> element_nc "DoubleQuote"
          | SingleQuote -> element_nc "SingleQuote"
        in
-       let i = `List (List.map of_inline i) in
+       let i = List.map of_inline i in
+       let i = `List i in
        element "Quoted" (`List [q; i])
     | RawInline (f, s) ->
       element "RawInline" (`List [`String f; `String s])
@@ -280,9 +284,11 @@ let map ?(block=(fun _ -> None)) ?(inline=(fun _ -> None)) p =
     | Some ii -> ii
     | None ->
       match i with
+      | Emph i -> [Emph (map_inlines i)]
       | Image (a, i, t) -> [Image (a, map_inlines i, t)]
       | Link (a, i, t) -> [Link (a, map_inlines i, t)]
       | Quoted (q, i) -> [Quoted (q, map_inlines i)]
+      | SmallCaps i -> [SmallCaps (map_inlines i)]
       | i -> [i]
   and map_blocks bb = List.flatten (List.map map_block bb)
   and map_inlines ii = List.flatten (List.map map_inline ii) in
