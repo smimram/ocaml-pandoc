@@ -11,9 +11,9 @@ type attr = string * string list * (string * string) list
 (** Target: url, title. *)
 type target = string * string
 
-type list_number_style = Decimal
+type list_number_style = DefaultStyle | Example | Decimal | LowerRoman | UpperRoman | LowerAlpha | UpperAlpha
 
-type list_number_delim = Period
+type list_number_delim = DefaultDelim | Period | OneParen | TwoParensPeriod
 
 type list_attributes = int * list_number_style * list_number_delim
 
@@ -80,12 +80,26 @@ module JSON = struct
   let to_list_attributes a =
     let n, ns, nd = to_triple a in
     let n = Util.to_int n in
-    let ns = element_type ns in
-    let nd = element_type nd in
-    (* TODO *)
-    assert (ns = "Decimal");
-    assert (nd = "Period");
-    n, Decimal, Period
+    let ns =
+      match element_type ns with
+      | "DefaultStyle" -> DefaultStyle
+      | "Example" -> Example
+      | "Decimal" -> Decimal
+      | "LowerRoman" -> LowerRoman
+      | "UpperRoman" -> UpperRoman
+      | "LowerAlpha" -> LowerAlpha
+      | "UpperAlpha" -> UpperAlpha
+      | _ -> assert false
+    in
+    let nd =
+      match element_type nd with
+      | "DefaultDelim" -> DefaultDelim
+      | "Period" -> Period
+      | "OneParen" -> OneParen
+      | "TwoParensPeriod" -> TwoParensPeriod
+      | _ -> assert false
+      in
+    n, ns, nd
 
   (* let to_math_type t = *)
     (* match element_type t with *)
@@ -176,10 +190,19 @@ module JSON = struct
   let of_list_attr (n, style, delim) =
     let n = `Int n in
     let style = match style with
+      | DefaultStyle -> "DefaultStyle"
+      | Example -> "Example"
       | Decimal -> "Decimal"
+      | LowerRoman -> "LowerRoman"
+      | UpperRoman -> "UpperRoman"
+      | LowerAlpha -> "LowerAlpha"
+      | UpperAlpha -> "UpperAlpha"
     in
     let delim = match delim with
+      | DefaultDelim -> "DefaultDelim"
       | Period -> "Period"
+      | OneParen -> "OneParen"
+      | TwoParensPeriod -> "TwoParensPeriod"
     in
     let style = `Assoc ["t", `String style] in
     let delim = `Assoc ["t", `String delim] in

@@ -8,9 +8,9 @@ type attr = string * string list * (string * string) list
 (** Target of a link: url and title. *)
 type target = string * string
 
-type list_number_style = Decimal
+type list_number_style = DefaultStyle | Example | Decimal | LowerRoman | UpperRoman | LowerAlpha | UpperAlpha
 
-type list_number_delim = Period
+type list_number_delim = DefaultDelim | Period | OneParen | TwoParensPeriod
 
 type list_attributes = int * list_number_style * list_number_delim
 
