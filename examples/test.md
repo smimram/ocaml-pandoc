@@ -1,6 +1,7 @@
 ---
 title: The title
 bli: Bla bla
+replacements: replacements
 ...
 Hello mp3, but not `mp3` [sc]{.smallcaps}
 

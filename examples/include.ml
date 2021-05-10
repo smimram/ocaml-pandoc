@@ -7,7 +7,7 @@ let () =
     | Pandoc.Para [Str "!include"; _; Quoted (DoubleQuote, [Str s])] ->
       let p = Pandoc.of_md_file s in
       let p = Pandoc.map_blocks f p in
-      Some p.blocks
+      Some (Pandoc.blocks p)
     (* ```{.blabla include="file"}
        ``` *)
     | CodeBlock ((ident, classes, keyvals), _) when List.mem_assoc "include" keyvals ->

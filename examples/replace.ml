@@ -24,12 +24,8 @@ module String = struct
     with Not_found -> None
 end
 
-let fname =
-  try Sys.getenv "PANDOC_REPLACE"
-  with Not_found -> "replacements"
-
 (** List of replacements to perform. *)
-let replacements =
+let replacements fname =
   let ic = open_in fname in
   let n = in_channel_length ic in
   let s = Bytes.create n in
@@ -50,6 +46,11 @@ let re_smallcaps = Str.regexp "^\\[\\(.*\\)\\]{\\.smallcaps}\\([.:,;()]?\\)$"
 
 let () =
   let p = Pandoc.of_json (Yojson.Basic.from_channel stdin) in
+  let fname =
+    try Pandoc.meta_string p "replacements"
+    with Not_found -> "replacements"
+  in
+  let replacements = replacements fname in
   let f = function
     | Str s ->
       let s =

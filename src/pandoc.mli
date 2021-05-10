@@ -46,12 +46,7 @@ and block =
   | UnhandledBlock of Yojson.Basic.t
 
 (** JSON representation of a pandoc file. *)
-type t =
-  {
-    api_version : int list;
-    meta : Yojson.Basic.t;
-    blocks : block list;
-  }
+type t
 
 (** {2 Reading and writing} *)
 
@@ -63,6 +58,17 @@ val to_json : t -> Yojson.Basic.t
 
 (** Construct representation of a markdown file. *)
 val of_md_file : string -> t
+
+(** API version. *)
+val api_version : t -> int list
+
+(** Blocks. *)
+val blocks : t -> block list
+
+(** {2 Metadata} *)
+
+(** Value of a string metadata. *)
+val meta_string : t -> string -> string
 
 (** {2 Mapping functions} *)
 

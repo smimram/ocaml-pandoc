@@ -290,6 +290,34 @@ let of_md_file fname =
   let json = json_of_md_file fname in
   of_json json
 
+let api_version p = p.api_version
+
+let blocks p = p.blocks
+
+(** {2 Metadata} *)
+
+type meta_value =
+  | MetaInlines of inline list
+  | MetaString of string
+  | MetaUnhandled of Yojson.Basic.t
+
+let of_meta e =
+  match JSON.element_type e with
+  | "MetaInlines" -> MetaInlines (JSON.element_contents e |> Util.to_list |> List.map JSON.to_inline)
+  | "MetaString" -> MetaString (Util.to_string (JSON.element_contents e))
+  | _ -> MetaUnhandled e
+
+let meta p =
+  let m = Util.to_assoc p.meta in
+  List.map (fun (k,v) -> k, of_meta v) m
+
+let meta_string p k =
+  match List.assoc k (meta p) with
+  | MetaInlines l ->
+    List.map (function Str s -> s | Space -> " " | _ -> raise Not_found) l |> String.concat ""
+  | MetaString s -> s
+  | _ -> raise Not_found
+
 (** {2 Transforming} *)
 
 (** Change the list of blocks. *)
