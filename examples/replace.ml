@@ -46,12 +46,22 @@ let re_smallcaps = Str.regexp "^\\[\\(.*\\)\\]{\\.smallcaps}\\([.:,;()]?\\)$"
 
 let () =
   let p = Pandoc.of_json (Yojson.Basic.from_channel stdin) in
+  (* File with all replacements. *)
   let fname =
     try Pandoc.meta_string p "replacements"
     with Not_found -> "replacements"
   in
+  (* Should we replace in headers? *)
+  let replace_headers =
+    try Pandoc.meta_bool p "replace-headers"
+    with Not_found -> true
+  in
   let replacements = replacements fname in
-  let f = function
+  let block = function
+    | Header _ as b when not replace_headers -> Some [b]
+    | _ -> None
+  in
+  let inline = function
     | Str s ->
       let s =
         try
@@ -79,6 +89,6 @@ let () =
       Some s
     | _ -> None
   in
-  let p = Pandoc.map ~inline:f p in
+  let p = Pandoc.map ~block ~inline p in
   let s = Yojson.Basic.pretty_to_string (Pandoc.to_json p) in
   print_endline s
