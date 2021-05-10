@@ -42,7 +42,7 @@ let () =
   prerr_endline ("Replacements:\n" ^ a ^ "\n")
 *)
 
-let re_smallcaps = Str.regexp "^\\[\\(.*\\)\\]{\\.smallcaps}\\([.:,;()]?\\)$"
+let re_smallcaps = Str.regexp "^\\[\\(.*\\)\\]{\\.smallcaps}\\([.:,;()]*\\)$"
 
 let () =
   let p = Pandoc.of_json (Yojson.Basic.from_channel stdin) in
