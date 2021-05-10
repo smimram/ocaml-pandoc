@@ -297,12 +297,14 @@ let blocks p = p.blocks
 (** {2 Metadata} *)
 
 type meta_value =
+  | MetaBool of bool
   | MetaInlines of inline list
   | MetaString of string
   | MetaUnhandled of Yojson.Basic.t
 
 let of_meta e =
   match JSON.element_type e with
+  | "MetaBool" -> MetaBool (Util.to_bool (JSON.element_contents e))
   | "MetaInlines" -> MetaInlines (JSON.element_contents e |> Util.to_list |> List.map JSON.to_inline)
   | "MetaString" -> MetaString (Util.to_string (JSON.element_contents e))
   | _ -> MetaUnhandled e
@@ -310,6 +312,11 @@ let of_meta e =
 let meta p =
   let m = Util.to_assoc p.meta in
   List.map (fun (k,v) -> k, of_meta v) m
+
+let meta_bool p k =
+  match List.assoc k (meta p) with
+  | MetaBool b -> b
+  | _ -> raise Not_found
 
 let meta_string p k =
   match List.assoc k (meta p) with

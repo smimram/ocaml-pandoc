@@ -67,6 +67,9 @@ val blocks : t -> block list
 
 (** {2 Metadata} *)
 
+(** Value of a boolean metadata. *)
+val meta_bool : t -> string -> bool
+
 (** Value of a string metadata. *)
 val meta_string : t -> string -> string
 
