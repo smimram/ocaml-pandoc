@@ -316,6 +316,10 @@ let meta p =
 let meta_bool p k =
   match List.assoc k (meta p) with
   | MetaBool b -> b
+  | MetaString "yes"
+  | MetaInlines [Str "yes"] -> true
+  | MetaString "no"
+  | MetaInlines [Str "no"] -> false
   | _ -> raise Not_found
 
 let meta_string p k =

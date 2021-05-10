@@ -2,7 +2,7 @@
 title: The title
 bli: Bla bla
 replacements: replacements
-replace-headers: false
+replace-headers: no
 ...
 Hello mp3, but not `mp3` [sc]{.smallcaps}
 
