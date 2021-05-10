@@ -4,11 +4,7 @@
 
 open Pandoc
 
-let fname =
-  try Sys.getenv "PANDOC_ABBREVIATIONS"
-  with Not_found -> "abbreviations"
-
-let abbreviations =
+let abbreviations fname =
   let ic = open_in fname in
   let n = in_channel_length ic in
   let s = Bytes.create n in
@@ -21,6 +17,8 @@ let abbreviations =
 
 let () =
   let p = Pandoc.of_json (Yojson.Basic.from_channel stdin) in
+  let fname = try Pandoc.meta_string p "abbreviations" with Not_found -> "abbreviations" in
+  let abbreviations = abbreviations fname in
   let rec f = function
     | (Str s)::Space::ii when List.mem s abbreviations -> Str (s^" ")::(f ii)
     | i::ii -> i::(f ii)
