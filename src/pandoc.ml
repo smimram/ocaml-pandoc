@@ -39,7 +39,7 @@ type inline =
 and block =
   | BulletList of block list list
   | CodeBlock of attr * string
-  (* | Header of int * attr * inline list *)
+  | Header of int * attr * inline list
   | OrderedList of list_attributes * block list list
   | Para of inline list
   | Plain of inline list
@@ -158,12 +158,12 @@ module JSON = struct
     | "CodeBlock" ->
        let attr, code = to_pair (element_contents e) in
        CodeBlock (to_attr attr, Util.to_string code)
-    (* | "Header" -> *)
-       (* let n, a, t = to_triple (element_contents e) in *)
-       (* let n = Util.to_int n in *)
-       (* let a = to_attr a in *)
-       (* let t = List.map to_inline (Util.to_list t) in *)
-       (* `Header (n, a, t) *)
+    | "Header" ->
+       let n, a, t = to_triple (element_contents e) in
+       let n = Util.to_int n in
+       let a = to_attr a in
+       let t = List.map to_inline (Util.to_list t) in
+       Header (n, a, t)
     | "OrderedList" ->
        let la, l = to_pair (element_contents e) in
        let la = to_list_attributes la in
@@ -212,13 +212,16 @@ module JSON = struct
     `List [`String url; `String title]
 
   let rec of_block = function
-    | BulletList l -> element "BulletList" (`List (List.map (fun l -> `List (List.map of_block l)) l))
+    | BulletList l -> element "BulletList" (`List (List.map of_blocks l))
     | CodeBlock (a, s) -> element "CodeBlock" (`List [of_attr a; `String s])
-    | OrderedList (la, l) -> element "OrderedList" (`List [of_list_attr la; `List (List.map (fun l -> `List (List.map of_block l)) l)])
-    | Para l -> element "Para" (`List (List.map of_inline l))
-    | Plain l -> element "Plain" (`List (List.map of_inline l))
+    | Header (n, a, t) -> element "Header" (`List [`Int n; of_attr a; of_inlines t])
+    | OrderedList (la, l) -> element "OrderedList" (`List [of_list_attr la; `List (List.map of_blocks l)])
+    | Para l -> element "Para" (of_inlines l)
+    | Plain l -> element "Plain" (of_inlines l)
     | RawBlock (f, c) -> element "RawBlock" (`List [`String f; `String c])
     | UnhandledBlock b -> b
+  and of_blocks l =
+    `List (List.map of_block l)
   and of_inline = function
     | Code (a, t) ->
        let a = of_attr a in
@@ -229,12 +232,12 @@ module JSON = struct
       element "Emph" (`List i)
     | Image (a, i, t) ->
        let a = of_attr a in
-       let i = `List (List.map of_inline i) in
+       let i = of_inlines i in
        let t = of_target t in
        element "Image" (`List [a; i; t])
     | Link (a, i, t) ->
        let a = of_attr a in
-       let i = `List (List.map of_inline i) in
+       let i = of_inlines i in
        let t = of_target t in
        element "Link" (`List [a; i; t])
     | Quoted (q, i) ->
@@ -248,10 +251,12 @@ module JSON = struct
        element "Quoted" (`List [q; i])
     | RawInline (f, s) ->
       element "RawInline" (`List [`String f; `String s])
-    | SmallCaps i -> element "SmallCaps" (`List (List.map of_inline i))
+    | SmallCaps i -> element "SmallCaps" (of_inlines i)
     | Space -> element_nc "Space"
     | Str s -> element "Str" (`String s)
     | UnhandledInline i -> i
+  and of_inlines l =
+    `List (List.map of_inline l)
 end
 
 (** {2 Reading and writing} *)
@@ -299,6 +304,7 @@ let map ?(block=(fun _ -> None)) ?(inline=(fun _ -> None)) p =
       match b with
       | BulletList l -> [BulletList (List.map map_blocks l)]
       | CodeBlock _ -> [b]
+      | Header (n, a, t) -> [Header (n, a, map_inlines t)]
       | OrderedList (la, l) -> [OrderedList (la, List.map map_blocks l)]
       | Para ii -> [Para (map_inlines ii)]
       | Plain ii -> [Plain (map_inlines ii)]

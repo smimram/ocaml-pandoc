@@ -38,6 +38,7 @@ type inline =
 and block =
   | BulletList of block list list
   | CodeBlock of attr * string
+  | Header of int * attr * inline list
   | OrderedList of list_attributes * block list list
   | Para of inline list
   | Plain of inline list
