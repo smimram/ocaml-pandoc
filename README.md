@@ -54,9 +54,13 @@ convenience (or because I needed those).
   by the contents of the file `test.ml` between lines 2 and 5 (negative values
   for `to` are counted from the end of the file). Useful for including small
   code snippets.
-- `pandoc-inspects`: acts as the identity plugin, but prints the JSON output
+- `pandoc-inspect`: acts as the identity plugin, but prints the JSON output
   given by pandoc on the standard error. Useful for debugging and adding missing
   features to the library.
+- `pandoc-pdf2png`: changes the extension of images from `.pdf` to
+  `.png`. Useful if you want to compile both to pdf and html.
+- `pandoc-replace`: replaces words by others. Useful for fixing capitalization
+  for instance.
 
 Bugs and features requests
 --------------------------
