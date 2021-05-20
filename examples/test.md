@@ -4,7 +4,7 @@ bli: Bla bla
 replacements: replacements
 replace-headers: no
 ...
-Hello mp3, but not `mp3` [sc]{.smallcaps}
+Hello (mp3), but not `mp3` [sc]{.smallcaps}
 
 ### The title
 

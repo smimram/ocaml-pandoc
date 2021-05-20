@@ -42,7 +42,8 @@ let () =
   prerr_endline ("Replacements:\n" ^ a ^ "\n")
 *)
 
-let re_smallcaps = Str.regexp "^\\[\\(.*\\)\\]{\\.smallcaps}\\([.:,;()]*\\)$"
+let re_word = Str.regexp "^\\([.:,;()]*\\)\\([a-zA-Z0-9]+\\)\\([.:,;()]*\\)$"
+let re_smallcaps = Str.regexp "^\\([.:,;()]*\\)\\[\\(.*\\)\\]{\\.smallcaps}\\([.:,;()]*\\)$"
 
 let () =
   let p = Pandoc.of_json (Yojson.Basic.from_channel stdin) in
@@ -65,25 +66,23 @@ let () =
     | Str s ->
       let s =
         try
-          (* Remove trailing punctuation. *)
-          let s, trail =
-            try
-              let n = String.find (fun c -> List.mem c ['.'; ':'; ','; ';'; '('; ')']) s in
-              String.split_at n s
-            with Not_found -> s, ""
-          in
-          List.assoc s replacements ^ trail
-        with Not_found -> s
+          if Str.string_match re_word s 0 then
+            let pre = Str.matched_group 1 s in
+            let post = Str.matched_group 3 s in
+            let s = Str.matched_group 2 s in
+            pre ^ List.assoc s replacements ^ post
+          else
+            List.assoc s replacements
+        with
+        | Not_found -> s
       in
       let s =
         if Str.string_match re_smallcaps s 0 then
           (* Handle smallcaps. *)
-          let str = Str.matched_group 1 s in
-          let trail =
-            try [Str (Str.matched_group 2 s)]
-            with Not_found -> []
-          in
-          (SmallCaps [Str str])::trail
+          let pre = Str.matched_group 1 s in
+          let post = Str.matched_group 3 s in
+          let s = Str.matched_group 2 s in
+          List.filter (fun x -> x <> Str "") [Str pre; SmallCaps [Str s]; Str post]
         else [Str s]
       in
       Some s
