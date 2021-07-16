@@ -43,6 +43,7 @@ and block =
   | Para of inline list
   | Plain of inline list
   | RawBlock of format * string
+  | Div of attr * block list
   | UnhandledBlock of Yojson.Basic.t
 
 (** JSON representation of a pandoc file. *)

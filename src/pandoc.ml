@@ -44,6 +44,7 @@ and block =
   | Para of inline list
   | Plain of inline list
   | RawBlock of format * string
+  | Div of attr * block list
   | UnhandledBlock of Yojson.Basic.t
 
 type t = { api_version : int list; meta : Yojson.Basic.t; blocks : block list }
@@ -175,6 +176,12 @@ module JSON = struct
     | "RawBlock" ->
        let fmt, contents = to_pair (element_contents e) in
        RawBlock (Util.to_string fmt, Util.to_string contents)
+    | "Div" ->
+       let a, l = to_pair (element_contents e) in
+       let a = to_attr a in
+       let l = Util.to_list l in
+       let l = List.map to_block l in
+       Div (a, l)
     | _ -> UnhandledBlock e
 
   let element t c = `Assoc ["t", `String t; "c", c]
@@ -219,6 +226,7 @@ module JSON = struct
     | Para l -> element "Para" (of_inlines l)
     | Plain l -> element "Plain" (of_inlines l)
     | RawBlock (f, c) -> element "RawBlock" (`List [`String f; `String c])
+    | Div (a, l) -> element "Div" (`List [of_attr a; of_blocks l])
     | UnhandledBlock b -> b
   and of_blocks l =
     `List (List.map of_block l)
@@ -348,6 +356,7 @@ let map ?(block=(fun _ -> None)) ?(inline=(fun _ -> None)) p =
       | Para ii -> [Para (map_inlines ii)]
       | Plain ii -> [Plain (map_inlines ii)]
       | RawBlock _ -> [b]
+      | Div (la, l) -> [Div (la, map_blocks l)]
       | UnhandledBlock _ -> [b]
   and map_inline i =
     match inline i with
