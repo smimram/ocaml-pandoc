@@ -17,23 +17,45 @@ type list_number_delim = DefaultDelim | Period | OneParen | TwoParensPeriod
 
 type list_attributes = int * list_number_style * list_number_delim
 
+type quote_type = DoubleQuote | SingleQuote
+
 type math_type = DisplayMath | InlineMath
 
-type quote_type = DoubleQuote | SingleQuote
+type citation_mode = AuthorInText | SuppressAuthor | NormalCitation
+
+type alignment = AlignLeft | AlignRight | AlignCenter | AlignDefault
+
+type col_width = ColWidth of float | ColWidthDefault
+
+type col_spec = alignment * col_width
+
+type row_span = RowSpan of int
+
+type col_span = ColSpan of int
+
+type row_head_columns = RowHeadColumns of int
 
 type inline =
   | Code of attr * string
   | Emph of inline list
   | Image of attr * inline list * target
   | Link of attr * inline list * target
-  (* | Math of math_type * string *)
-  (* | Note of block list *)
   | Quoted of quote_type * inline list
   | RawInline of string * string
-  (* | SoftBreak *)
   | Space
   | SmallCaps of inline list
   | Str of string
+  | Underline of inline list
+  | Strong of inline list
+  | Strikeout of inline list
+  | Superscript of inline list
+  | Subscript of inline list
+  | Cite of citation list * inline list
+  | SoftBreak
+  | LineBreak
+  | Math of math_type * string
+  | Note of block list
+  | Span of attr * inline list
   | UnhandledInline of Yojson.Basic.t
 
 and block =
@@ -45,7 +67,37 @@ and block =
   | Plain of inline list
   | RawBlock of format * string
   | Div of attr * block list
+  | LineBlock of inline list list
+  | BlockQuote of block list
+  | DefinitionList of (inline list * block list list) list
+  | HorizontalRule
+  | Table of attr * caption * col_spec list * table_head * table_body list * table_foot
+  | Figure of attr * caption * block list
   | UnhandledBlock of Yojson.Basic.t
+
+and citation =
+  Citation of
+    { citationId      : string
+    ; citationPrefix  : inline list
+    ; citationSuffix  : inline list
+    ; citationMode    : citation_mode
+    ; citationNoteNum : int
+    ; citationHash    : int
+    }
+
+and caption = Caption of short_caption option * block list
+
+and short_caption = inline list
+
+and cell = Cell of attr * alignment * row_span * col_span * block list
+
+and row = Row of attr * cell list
+
+and table_head = TableHead of attr * row list
+
+and table_body = TableBody of attr * row_head_columns * row list * row list
+
+and table_foot = TableFoot of attr * row list
 
 type t = { api_version : int list; meta : Yojson.Basic.t; blocks : block list }
 
@@ -64,6 +116,21 @@ module JSON = struct
   let to_triple p =
     match Util.to_list p with
     | [x; y; z] -> x, y, z
+    | _ -> assert false
+
+  let to_quadruple p =
+    match Util.to_list p with
+    | [w; x; y; z] -> w, x, y, z
+    | _ -> assert false
+
+  let to_quintuple p =
+    match Util.to_list p with
+    | [v; w; x; y; z] -> v, w, x, y, z
+    | _ -> assert false
+
+  let to_sextuple p =
+    match Util.to_list p with
+    | [u; v; w; x; y; z] -> u, v, w, x, y, z
     | _ -> assert false
 
   let to_attr attr =
@@ -102,87 +169,223 @@ module JSON = struct
       in
     n, ns, nd
 
-  (* let to_math_type t = *)
-    (* match element_type t with *)
-    (* | "DisplayMath" -> DisplayMath *)
-    (* | "InlineMath" -> InlineMath *)
-    (* | _ -> assert false *)
+  let to_math_type t =
+    match element_type t with
+    | "DisplayMath" -> DisplayMath
+    | "InlineMath" -> InlineMath
+    | _ -> assert false
+
+  let to_alignment a =
+    match element_type a with
+    | "AlignLeft" -> AlignLeft
+    | "AlignRight" -> AlignRight
+    | "AlignCenter" -> AlignCenter
+    | "AlignDefault" -> AlignDefault
+    | _ -> assert false
+
+  let to_citation_mode m =
+    match element_type m with
+    | "AuthorInText" -> AuthorInText
+    | "SuppressAuthor" -> SuppressAuthor
+    | "NormalCitation" -> NormalCitation
+    | _ -> assert false
 
   let rec to_inline e =
     match element_type e with
     | "Code" ->
-       let a, c = to_pair (element_contents e) in
-       let a = to_attr a in
-       let c = Util.to_string c in
-       Code (a, c)
-    | "Emph" -> Emph (List.map to_inline (Util.to_list (element_contents e)))
+      let a, c = to_pair (element_contents e) in
+      Code (to_attr a, Util.to_string c)
+    | "Emph" ->
+      Emph (to_inline_list (element_contents e))
     | "Image" ->
-       let a, i, t = to_triple (element_contents e) in
-       let a = to_attr a in
-       let i = List.map to_inline (Util.to_list i) in
-       let t = to_target t in
-       Image (a, i, t)
+      let a, i, t = to_triple (element_contents e) in
+      Image
+        ( to_attr a
+        , to_inline_list i
+        , to_target t
+        )
     | "Link" ->
-       let a, i, t = to_triple (element_contents e) in
-       let a = to_attr a in
-       let i = List.map to_inline (Util.to_list i) in
-       let t = to_target t in
-       Link (a, i, t)
-    (* | "Math" -> *)
-       (* let t, m = to_pair (element_contents e) in *)
-       (* let t = to_math_type t in *)
-       (* let m = Util.to_string m in *)
-       (* Math (t, m) *)
-    (* | "Note" -> Note (List.map to_block (Util.to_list (element_contents e))) *)
+      let a, i, t = to_triple (element_contents e) in
+      Link
+        ( to_attr a
+        , to_inline_list i
+        , to_target t
+        )
     | "Quoted" ->
-       let q, l = to_pair (element_contents e) in
-       let q =
-         match element_type q with
-         | "DoubleQuote" -> DoubleQuote
-         | "SingleQuote" -> SingleQuote
-         | q -> failwith ("Unhandled quote type "^q)
-       in
-       let l = List.map to_inline (Util.to_list l) in
-       Quoted (q, l)
-    | "SmallCaps" -> SmallCaps (List.map to_inline (Util.to_list (element_contents e)))
-    (* | "SoftBreak" -> SoftBreak *)
-    | "Str" -> Str (Util.to_string (element_contents e))
-    | "Space" -> Space
-    | _ -> UnhandledInline e
-      
+      let q, l = to_pair (element_contents e) in
+      let q =
+        match element_type q with
+        | "DoubleQuote" -> DoubleQuote
+        | "SingleQuote" -> SingleQuote
+        | q -> failwith ("Unhandled quote type " ^ q)
+      in
+      Quoted (q, to_inline_list l)
+    | "RawInline" ->
+      let fmt, contents = to_pair (element_contents e) in
+      RawInline (Util.to_string fmt, Util.to_string contents)
+    | "Space" ->
+      Space
+    | "SmallCaps" ->
+      SmallCaps (to_inline_list (element_contents e))
+    | "Str" ->
+      Str (Util.to_string (element_contents e))
+    | "Underline" ->
+      Underline (to_inline_list (element_contents e))
+    | "Strong" ->
+      Strong (to_inline_list (element_contents e))
+    | "Strikeout" ->
+      Strikeout (to_inline_list (element_contents e))
+    | "Superscript" ->
+      Superscript (to_inline_list (element_contents e))
+    | "Subscript" ->
+      Subscript (to_inline_list (element_contents e))
+    | "Cite" ->
+      let c, i = to_pair (element_contents e) in
+      let to_citation x =
+        Citation
+          { citationId = Util.to_string (Util.member "citationId" x)
+          ; citationPrefix = to_inline_list (Util.member "citationPrefix" x)
+          ; citationSuffix = to_inline_list (Util.member "citationSuffix" x)
+          ; citationMode = to_citation_mode (Util.member "citationMode" x)
+          ; citationNoteNum = Util.to_int (Util.member "citationNoteNum" x)
+          ; citationHash = Util.to_int (Util.member "citationHash" x)
+          }
+      in
+      Cite (List.map to_citation (Util.to_list c), to_inline_list i)
+    | "SoftBreak" ->
+      SoftBreak
+    | "LineBreak" ->
+      LineBreak
+    | "Math" ->
+      let t, m = to_pair (element_contents e) in
+      Math (to_math_type t, Util.to_string m)
+    | "Note" ->
+      Note (to_block_list (element_contents e))
+    | "Span" ->
+      let a, l = to_pair (element_contents e) in
+      Span (to_attr a, List.map to_inline (Util.to_list l))
+    | _ ->
+      UnhandledInline e
+
   and to_block e =
     match element_type e with
     | "BulletList" ->
-       let l = Util.to_list (element_contents e) in
-       let l = List.map (fun l -> List.map to_block (Util.to_list l)) l in
-       BulletList l
+      let l = Util.to_list (element_contents e) in
+      BulletList (List.map to_block_list l)
     | "CodeBlock" ->
-       let attr, code = to_pair (element_contents e) in
-       CodeBlock (to_attr attr, Util.to_string code)
+      let attr, code = to_pair (element_contents e) in
+      CodeBlock (to_attr attr, Util.to_string code)
     | "Header" ->
-       let n, a, t = to_triple (element_contents e) in
-       let n = Util.to_int n in
-       let a = to_attr a in
-       let t = List.map to_inline (Util.to_list t) in
-       Header (n, a, t)
+      let n, a, t = to_triple (element_contents e) in
+      Header
+        ( Util.to_int n
+        , to_attr a
+        , to_inline_list t
+        )
     | "OrderedList" ->
-       let la, l = to_pair (element_contents e) in
-       let la = to_list_attributes la in
-       let l = Util.to_list l in
-       let l = List.map (fun l -> List.map to_block (Util.to_list l)) l in
-       OrderedList (la, l)
-    | "Para" -> Para (List.map to_inline (Util.to_list (element_contents e)))
-    | "Plain" -> Plain (List.map to_inline (Util.to_list (element_contents e)))
+      let la, l = to_pair (element_contents e) in
+      OrderedList
+        ( to_list_attributes la
+        , List.map to_block_list (Util.to_list l)
+        )
+    | "Para" ->
+      Para (to_inline_list (element_contents e))
+    | "Plain" ->
+      Plain (to_inline_list (element_contents e))
     | "RawBlock" ->
-       let fmt, contents = to_pair (element_contents e) in
-       RawBlock (Util.to_string fmt, Util.to_string contents)
+      let fmt, contents = to_pair (element_contents e) in
+      RawBlock (Util.to_string fmt, Util.to_string contents)
     | "Div" ->
-       let a, l = to_pair (element_contents e) in
-       let a = to_attr a in
-       let l = Util.to_list l in
-       let l = List.map to_block l in
-       Div (a, l)
+      let a, l = to_pair (element_contents e) in
+      Div (to_attr a, to_block_list l)
+    | "LineBlock" ->
+      let l = Util.to_list (element_contents e) in
+      LineBlock (List.map to_inline_list l)
+    | "BlockQuote" ->
+      BlockQuote (to_block_list (element_contents e))
+    | "DefinitionList" ->
+      let l = Util.to_list (element_contents e) in
+      let to_item x =
+        let term, defs = to_pair x in
+        ( to_inline_list term
+        , List.map to_block_list (Util.to_list defs)
+        )
+      in
+      DefinitionList (List.map to_item l)
+    | "HorizontalRule" ->
+      HorizontalRule
+    | "Table" ->
+      let a, c, cs, th, tb, tf = to_sextuple (element_contents e) in
+      let to_col_width x =
+        match element_type x with
+        | "ColWidth" -> ColWidth (Util.to_float (element_contents x))
+        | "ColWidthDefault" -> ColWidthDefault
+        | _ -> assert false
+      in
+      let to_col_spec x =
+        let al, cw = to_pair x in
+        to_alignment al, to_col_width cw
+      in
+      let to_cell x =
+        let a, al, rs, cs, l = to_quintuple x in
+        Cell
+          ( to_attr a
+          , to_alignment al
+          , RowSpan (Util.to_int rs)
+          , ColSpan (Util.to_int cs)
+          , to_block_list l
+          )
+      in
+      let to_row x =
+        let a, cl = to_pair x in
+        Row (to_attr a, List.map to_cell (Util.to_list cl))
+      in
+      let to_table_head x =
+        let a, rl = to_pair x in
+        TableHead (to_attr a, List.map to_row (Util.to_list rl))
+      in
+      let to_table_body x =
+        let a, hc, rl, rl' = to_quadruple x in
+        TableBody
+          ( to_attr a
+          , RowHeadColumns (Util.to_int hc)
+          , List.map to_row (Util.to_list rl)
+          , List.map to_row (Util.to_list rl')
+          )
+      in
+      let to_table_foot x =
+        let a, rl = to_pair x in
+        TableFoot (to_attr a, List.map to_row (Util.to_list rl))
+      in
+      Table
+        ( to_attr a
+        , to_caption c
+        , List.map to_col_spec (Util.to_list cs)
+        , to_table_head th
+        , List.map to_table_body (Util.to_list tb)
+        , to_table_foot tf
+        )
+    | "Figure" ->
+      let a, c, l = to_triple (element_contents e) in
+      Figure
+        ( to_attr a
+        , to_caption c
+        , to_block_list l
+        )
     | _ -> UnhandledBlock e
+
+  and to_inline_list l =
+    List.map to_inline (Util.to_list l)
+
+  and to_block_list l =
+    List.map to_block (Util.to_list l)
+
+  and to_caption c =
+    let o, l = to_pair c in
+    Caption
+      ( Util.to_option to_inline_list o
+      , to_block_list l
+      )
 
   let element t c = `Assoc ["t", `String t; "c", c]
 
@@ -218,53 +421,160 @@ module JSON = struct
   let of_target (url, title) =
     `List [`String url; `String title]
 
+  let of_alignment = function
+    | AlignLeft -> element_nc "AlignLeft"
+    | AlignRight -> element_nc "AlignRight"
+    | AlignCenter -> element_nc "AlignCenter"
+    | AlignDefault -> element_nc "AlignDefault"
+
+  let of_col_width = function
+    | ColWidth w -> element "ColWidth" (`Float w)
+    | ColWidthDefault -> element_nc "ColWidthDefault"
+
+  let of_col_spec (a, cw) =
+    `List [ of_alignment a; of_col_width cw ]
+
+  let of_math_type = function
+    | DisplayMath -> element_nc "DisplayMath"
+    | InlineMath -> element_nc "InlineMath"
+
   let rec of_block = function
-    | BulletList l -> element "BulletList" (`List (List.map of_blocks l))
-    | CodeBlock (a, s) -> element "CodeBlock" (`List [of_attr a; `String s])
-    | Header (n, a, t) -> element "Header" (`List [`Int n; of_attr a; of_inlines t])
-    | OrderedList (la, l) -> element "OrderedList" (`List [of_list_attr la; `List (List.map of_blocks l)])
-    | Para l -> element "Para" (of_inlines l)
-    | Plain l -> element "Plain" (of_inlines l)
-    | RawBlock (f, c) -> element "RawBlock" (`List [`String f; `String c])
-    | Div (a, l) -> element "Div" (`List [of_attr a; of_blocks l])
-    | UnhandledBlock b -> b
+    | BulletList l ->
+      element "BulletList" (`List (List.map of_blocks l))
+    | CodeBlock (a, s) ->
+      element "CodeBlock" (`List [of_attr a; `String s])
+    | Header (n, a, t) ->
+      element "Header" (`List [`Int n; of_attr a; of_inlines t])
+    | OrderedList (la, l) ->
+      element "OrderedList" (`List [of_list_attr la; `List (List.map of_blocks l)])
+    | Para l ->
+      element "Para" (of_inlines l)
+    | Plain l ->
+      element "Plain" (of_inlines l)
+    | RawBlock (f, c) ->
+      element "RawBlock" (`List [`String f; `String c])
+    | Div (a, l) ->
+      element "Div" (`List [of_attr a; of_blocks l])
+    | LineBlock l ->
+      element "LineBlock" (`List (List.map of_inlines l))
+    | BlockQuote l ->
+      element "BlockQuote" (of_blocks l)
+    | DefinitionList l ->
+      element "DefinitionList" @@
+        `List (l |> List.map (fun (il, bll) ->
+          `List [of_inlines il; `List (List.map of_blocks bll)]))
+    | HorizontalRule ->
+      element_nc "HorizontalRule"
+    | Table (a, c, cs, th, tb, tf) ->
+      element "Table" @@
+        `List
+          [ of_attr a
+          ; of_caption c
+          ; `List (List.map of_col_spec cs)
+          ; of_table_head th
+          ; `List (List.map of_table_body tb)
+          ; of_table_foot tf
+          ]
+    | Figure (a, c, l) ->
+      element "Figure" (`List [of_attr a; of_caption c; of_blocks l])
+    | UnhandledBlock b ->
+      b
+
   and of_blocks l =
     `List (List.map of_block l)
+
   and of_inline = function
     | Code (a, t) ->
-       let a = of_attr a in
-       let t = `String t in
-       element "Code" (`List [a; t])
+      element "Code" (`List [of_attr a; `String t])
     | Emph i ->
-      let i = List.map of_inline i in
-      element "Emph" (`List i)
+      element "Emph" (of_inlines i)
     | Image (a, i, t) ->
-       let a = of_attr a in
-       let i = of_inlines i in
-       let t = of_target t in
-       element "Image" (`List [a; i; t])
+      element "Image" (`List [of_attr a; of_inlines i; of_target t])
     | Link (a, i, t) ->
-       let a = of_attr a in
-       let i = of_inlines i in
-       let t = of_target t in
-       element "Link" (`List [a; i; t])
+      element "Link" (`List [of_attr a; of_inlines i; of_target t])
     | Quoted (q, i) ->
-       let q =
-         match q with
-         | DoubleQuote -> element_nc "DoubleQuote"
-         | SingleQuote -> element_nc "SingleQuote"
-       in
-       let i = List.map of_inline i in
-       let i = `List i in
-       element "Quoted" (`List [q; i])
+      let q =
+        match q with
+        | DoubleQuote -> element_nc "DoubleQuote"
+        | SingleQuote -> element_nc "SingleQuote"
+      in
+      element "Quoted" (`List [q; of_inlines i])
     | RawInline (f, s) ->
       element "RawInline" (`List [`String f; `String s])
-    | SmallCaps i -> element "SmallCaps" (of_inlines i)
-    | Space -> element_nc "Space"
-    | Str s -> element "Str" (`String s)
-    | UnhandledInline i -> i
+    | SmallCaps i ->
+      element "SmallCaps" (of_inlines i)
+    | Space ->
+      element_nc "Space"
+    | Str s ->
+      element "Str" (`String s)
+    | Underline i ->
+      element "Underline" (of_inlines i)
+    | Strong i ->
+      element "Strong" (of_inlines i)
+    | Strikeout i ->
+      element "Strikeout" (of_inlines i)
+    | Superscript i ->
+      element "Superscript" (of_inlines i)
+    | Subscript i ->
+      element "Subscript" (of_inlines i)
+    | Cite (ci, i) ->
+      element "Cite" (`List [`List (List.map of_citation ci); of_inlines i])
+    | SoftBreak ->
+      element_nc "SoftBreak"
+    | LineBreak ->
+      element_nc "LineBreak"
+    | Math (m, s) ->
+      element "Math" (`List [of_math_type m; `String s])
+    | Note l ->
+      element "Note" (of_blocks l)
+    | Span (a, i) ->
+      element "Span" (`List [of_attr a; of_inlines i])
+    | UnhandledInline i ->
+      i
+
   and of_inlines l =
     `List (List.map of_inline l)
+
+  and of_caption (Caption (c, l)) =
+    `List [Option.fold ~some:of_inlines ~none:`Null c; of_blocks l]
+
+  and of_cell (Cell (at, al, rs, cs, l)) =
+    let rs = match rs with RowSpan n -> `Int n in
+    let cs = match cs with ColSpan n -> `Int n in
+    `List [of_attr at; of_alignment al; rs; cs; of_blocks l]
+
+  and of_row (Row (a, cl)) =
+    `List [of_attr a; `List (List.map of_cell cl)]
+
+  and of_table_head (TableHead (a, rl)) =
+    `List [of_attr a; `List (List.map of_row rl)]
+
+  and of_table_body (TableBody (a, hc, rl, rl')) =
+    let hc = match hc with RowHeadColumns n -> `Int n in
+    `List
+      [ of_attr a
+      ; hc
+      ; `List (List.map of_row rl)
+      ; `List (List.map of_row rl')
+      ]
+
+  and of_table_foot (TableFoot (a, rl)) =
+    `List [of_attr a; `List (List.map of_row rl)]
+
+  and of_citation (Citation c) =
+    let of_citation_mode = function
+      | AuthorInText -> "AuthorInText"
+      | SuppressAuthor -> "SuppressAuthor"
+      | NormalCitation -> "NormalCitation"
+    in
+    `Assoc
+      [ "citationId", `String c.citationId
+      ; "citationPrefix", of_inlines c.citationPrefix
+      ; "citationSuffix", of_inlines c.citationSuffix
+      ; "citationMode", element_nc (of_citation_mode c.citationMode)
+      ; "citationNoteNum", `Int c.citationNoteNum
+      ; "citationHash", `Int c.citationHash
+      ]
 end
 
 (** {2 Reading and writing} *)
@@ -349,30 +659,54 @@ let map ?(block=(fun _ -> None)) ?(inline=(fun _ -> None)) p =
     | Some bb -> bb
     | None ->
       match b with
-      | BulletList l -> [BulletList (List.map map_blocks l)]
-      | CodeBlock _ -> [b]
-      | Header (n, a, t) -> [Header (n, a, map_inlines t)]
-      | OrderedList (la, l) -> [OrderedList (la, List.map map_blocks l)]
+      | CodeBlock _ | RawBlock _ | HorizontalRule | UnhandledBlock _ ->
+        [b]
       | Para ii -> [Para (map_inlines ii)]
       | Plain ii -> [Plain (map_inlines ii)]
-      | RawBlock _ -> [b]
       | Div (la, l) -> [Div (la, map_blocks l)]
-      | UnhandledBlock _ -> [b]
+      | BulletList l -> [BulletList (List.map map_blocks l)]
+      | Header (n, a, t) -> [Header (n, a, map_inlines t)]
+      | OrderedList (la, l) -> [OrderedList (la, List.map map_blocks l)]
+      | LineBlock l -> [LineBlock (List.map map_inlines l)]
+      | BlockQuote l -> [BlockQuote (map_blocks l)]
+      | DefinitionList l ->
+        [DefinitionList (l |> List.map (fun (term, defs) ->
+          (map_inlines term, List.map map_blocks defs)))]
+      | Table (a, c, cs, th, tb, tf) ->
+        let map_cell (Cell (a, al, rs, cs, l)) =
+          Cell (a, al, rs, cs, map_blocks l) in
+        let map_row (Row (a, cells)) =
+          Row (a, List.map map_cell cells) in
+        let map_th (TableHead (a, rows)) =
+          TableHead (a, List.map map_row rows) in
+        let map_tb (TableBody (a, c, rows, rows')) =
+          TableBody (a, c, List.map map_row rows, List.map map_row rows') in
+        let map_tf (TableFoot (a, rows)) =
+          TableFoot (a, List.map map_row rows) in
+        [Table (a, c, cs, map_th th, List.map map_tb tb, map_tf tf)]
+      | Figure (a, c, l) -> [Figure (a, c, map_blocks l)]
+
   and map_inline i =
     match inline i with
     | Some ii -> ii
     | None ->
       match i with
-      | Code _ -> [i]
+      | Code _ | Space | Str _ | RawInline _ | Math _
+      | SoftBreak | LineBreak | UnhandledInline _ ->
+        [i]
       | Emph i -> [Emph (map_inlines i)]
       | Image (a, i, t) -> [Image (a, map_inlines i, t)]
       | Link (a, i, t) -> [Link (a, map_inlines i, t)]
       | Quoted (q, i) -> [Quoted (q, map_inlines i)]
-      | RawInline _ -> [i]
       | SmallCaps i -> [SmallCaps (map_inlines i)]
-      | Space -> [i]
-      | Str _ -> [i]
-      | UnhandledInline _ -> [i]
+      | Underline i -> [Underline (map_inlines i)]
+      | Strong i -> [Strong (map_inlines i)]
+      | Strikeout i -> [Strikeout (map_inlines i)]
+      | Superscript i -> [Superscript (map_inlines i)]
+      | Subscript i -> [Subscript (map_inlines i)]
+      | Cite (c, i) -> [Cite (c, map_inlines i)]
+      | Note l -> [Note (map_blocks l)]
+      | Span (a, i) -> [Span (a, map_inlines i)]
   and map_blocks bb = List.flatten (List.map map_block bb)
   and map_inlines ii = List.flatten (List.map map_inline ii) in
   replace_blocks map_blocks p
