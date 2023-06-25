@@ -46,6 +46,7 @@ let re_word = Str.regexp "^\\([.:,;()]*\\)\\([a-zA-Z0-9]+\\)\\([.:,;()]*\\)$"
 let re_smallcaps = Str.regexp "^\\([.:,;()]*\\)\\[\\(.*\\)\\]{\\.smallcaps}\\([.:,;()]*\\)$"
 
 let () =
+  Printexc.record_backtrace true;
   let p = Pandoc.of_json (Yojson.Basic.from_channel stdin) in
   (* File with all replacements. *)
   let fname =
