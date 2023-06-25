@@ -2,10 +2,14 @@ name: Build
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Install packages
-      run: sudo apt-get install ocaml-nox libyojson-ocaml-dev dune
+      run: sudo apt-get -y install ocaml-nox libyojson-ocaml-dev dune
     - name: Build
       run: dune build
+    - name: Test
+      run: |
+        sudo apt-get -y install pandoc
+        make -C examples test
