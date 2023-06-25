@@ -1,7 +1,8 @@
 open Yojson.Basic
 open Util
 
-(* http://hackage.haskell.org/package/pandoc-types-1.19/docs/Text-Pandoc-Definition.html *)
+(* https://hackage.haskell.org/package/pandoc-types-1.19/docs/Text-Pandoc-Definition.html
+   https://hackage.haskell.org/package/pandoc-types-1.23/docs/Text-Pandoc-Definition.html*)
 
 type format = string
 
@@ -315,56 +316,70 @@ module JSON = struct
     | "HorizontalRule" ->
       HorizontalRule
     | "Table" ->
-      let a, c, cs, th, tb, tf = to_sextuple (element_contents e) in
-      let to_col_width x =
-        match element_type x with
-        | "ColWidth" -> ColWidth (Util.to_float (element_contents x))
-        | "ColWidthDefault" -> ColWidthDefault
-        | _ -> assert false
-      in
-      let to_col_spec x =
-        let al, cw = to_pair x in
-        to_alignment al, to_col_width cw
-      in
-      let to_cell x =
-        let a, al, rs, cs, l = to_quintuple x in
-        Cell
-          ( to_attr a
-          , to_alignment al
-          , RowSpan (Util.to_int rs)
-          , ColSpan (Util.to_int cs)
-          , to_block_list l
+      let e = element_contents e in
+      if List.length (Util.to_list e) = 5 then
+        (* "Backward compatibility", see https://hackage.haskell.org/package/pandoc-types-1.19/docs/Text-Pandoc-Definition.html. *)
+        let no_attr = "", [], [] in
+        let c, _cs, _cw, _th, _tb = to_quintuple e in
+        Table
+          ( no_attr
+          , to_caption c
+          , [] (* TODO *)
+          , TableHead (no_attr, []) (* TODO *)
+          , [] (* TODO *)
+          , TableFoot (no_attr, [])
           )
-      in
-      let to_row x =
-        let a, cl = to_pair x in
-        Row (to_attr a, List.map to_cell (Util.to_list cl))
-      in
-      let to_table_head x =
-        let a, rl = to_pair x in
-        TableHead (to_attr a, List.map to_row (Util.to_list rl))
-      in
-      let to_table_body x =
-        let a, hc, rl, rl' = to_quadruple x in
-        TableBody
+      else
+        let a, c, cs, th, tb, tf = to_sextuple e in
+        let to_col_width x =
+          match element_type x with
+          | "ColWidth" -> ColWidth (Util.to_float (element_contents x))
+          | "ColWidthDefault" -> ColWidthDefault
+          | _ -> assert false
+        in
+        let to_col_spec x =
+          let al, cw = to_pair x in
+          to_alignment al, to_col_width cw
+        in
+        let to_cell x =
+          let a, al, rs, cs, l = to_quintuple x in
+          Cell
+            ( to_attr a
+            , to_alignment al
+            , RowSpan (Util.to_int rs)
+            , ColSpan (Util.to_int cs)
+            , to_block_list l
+            )
+        in
+        let to_row x =
+          let a, cl = to_pair x in
+          Row (to_attr a, List.map to_cell (Util.to_list cl))
+        in
+        let to_table_head x =
+          let a, rl = to_pair x in
+          TableHead (to_attr a, List.map to_row (Util.to_list rl))
+        in
+        let to_table_body x =
+          let a, hc, rl, rl' = to_quadruple x in
+          TableBody
+            ( to_attr a
+            , RowHeadColumns (Util.to_int hc)
+            , List.map to_row (Util.to_list rl)
+            , List.map to_row (Util.to_list rl')
+            )
+        in
+        let to_table_foot x =
+          let a, rl = to_pair x in
+          TableFoot (to_attr a, List.map to_row (Util.to_list rl))
+        in
+        Table
           ( to_attr a
-          , RowHeadColumns (Util.to_int hc)
-          , List.map to_row (Util.to_list rl)
-          , List.map to_row (Util.to_list rl')
+          , to_caption c
+          , List.map to_col_spec (Util.to_list cs)
+          , to_table_head th
+          , List.map to_table_body (Util.to_list tb)
+          , to_table_foot tf
           )
-      in
-      let to_table_foot x =
-        let a, rl = to_pair x in
-        TableFoot (to_attr a, List.map to_row (Util.to_list rl))
-      in
-      Table
-        ( to_attr a
-        , to_caption c
-        , List.map to_col_spec (Util.to_list cs)
-        , to_table_head th
-        , List.map to_table_body (Util.to_list tb)
-        , to_table_foot tf
-        )
     | "Figure" ->
       let a, c, l = to_triple (element_contents e) in
       Figure
