@@ -320,10 +320,10 @@ module JSON = struct
       if List.length (Util.to_list e) = 5 then
         (* "Backward compatibility", see https://hackage.haskell.org/package/pandoc-types-1.19/docs/Text-Pandoc-Definition.html. *)
         let no_attr = "", [], [] in
-        let c, _cs, _cw, _th, _tb = to_quintuple e in
+        let _c, _cs, _cw, _th, _tb = to_quintuple e in
         Table
           ( no_attr
-          , to_caption c
+          , Caption (None, []) (* TODO *)
           , [] (* TODO *)
           , TableHead (no_attr, []) (* TODO *)
           , [] (* TODO *)
