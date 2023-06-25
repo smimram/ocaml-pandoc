@@ -77,12 +77,12 @@ and block =
 
 and citation =
   Citation of
-    { citationId      : string
-    ; citationPrefix  : inline list
-    ; citationSuffix  : inline list
-    ; citationMode    : citation_mode
-    ; citationNoteNum : int
-    ; citationHash    : int
+    { citation_id       : string
+    ; citation_prefix   : inline list
+    ; citation_suffix   : inline list
+    ; citation_mode     : citation_mode
+    ; citation_note_num : int
+    ; citation_hash     : int
     }
 
 and caption = Caption of short_caption option * block list
@@ -243,12 +243,12 @@ module JSON = struct
       let c, i = to_pair (element_contents e) in
       let to_citation x =
         Citation
-          { citationId = Util.to_string (Util.member "citationId" x)
-          ; citationPrefix = to_inline_list (Util.member "citationPrefix" x)
-          ; citationSuffix = to_inline_list (Util.member "citationSuffix" x)
-          ; citationMode = to_citation_mode (Util.member "citationMode" x)
-          ; citationNoteNum = Util.to_int (Util.member "citationNoteNum" x)
-          ; citationHash = Util.to_int (Util.member "citationHash" x)
+          { citation_id = Util.to_string (Util.member "citationId" x)
+          ; citation_prefix = to_inline_list (Util.member "citationPrefix" x)
+          ; citation_suffix = to_inline_list (Util.member "citationSuffix" x)
+          ; citation_mode = to_citation_mode (Util.member "citationMode" x)
+          ; citation_note_num = Util.to_int (Util.member "citationNoteNum" x)
+          ; citation_hash = Util.to_int (Util.member "citationHash" x)
           }
       in
       Cite (List.map to_citation (Util.to_list c), to_inline_list i)
@@ -568,12 +568,12 @@ module JSON = struct
       | NormalCitation -> "NormalCitation"
     in
     `Assoc
-      [ "citationId", `String c.citationId
-      ; "citationPrefix", of_inlines c.citationPrefix
-      ; "citationSuffix", of_inlines c.citationSuffix
-      ; "citationMode", element_nc (of_citation_mode c.citationMode)
-      ; "citationNoteNum", `Int c.citationNoteNum
-      ; "citationHash", `Int c.citationHash
+      [ "citationId", `String c.citation_id
+      ; "citationPrefix", of_inlines c.citation_prefix
+      ; "citationSuffix", of_inlines c.citation_suffix
+      ; "citationMode", element_nc (of_citation_mode c.citation_mode)
+      ; "citationNoteNum", `Int c.citation_note_num
+      ; "citationHash", `Int c.citation_hash
       ]
 end
 

@@ -87,12 +87,12 @@ and block =
 
 and citation =
   Citation of
-    { citationId      : string
-    ; citationPrefix  : inline list
-    ; citationSuffix  : inline list
-    ; citationMode    : citation_mode
-    ; citationNoteNum : int
-    ; citationHash    : int
+    { citation_id       : string
+    ; citation_prefix   : inline list
+    ; citation_suffix   : inline list
+    ; citation_mode     : citation_mode
+    ; citation_note_num : int
+    ; citation_hash     : int
     }
 
 (** The caption of a table or figure, with optional short caption. *)
