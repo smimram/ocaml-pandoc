@@ -6,10 +6,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install packages
-      run: sudo apt-get -y install ocaml-nox libyojson-ocaml-dev dune
+      run: sudo apt-get -y install ocaml-nox libyojson-ocaml-dev dune ocaml-odoc
     - name: Build
       run: dune build
     - name: Test
       run: |
         sudo apt-get -y install pandoc
         make -C examples test
+    - name: Documentation
+      run: make doc
+    - name: Deploy documentation
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./_build/default/_doc/_html
