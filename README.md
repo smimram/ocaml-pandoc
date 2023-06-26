@@ -6,6 +6,12 @@ which is tool to convert between textual formats, notably markdown and LaTeX. It
 is vaguely inspired of the corresponding [Haskell
 library](http://hackage.haskell.org/package/pandoc-types).
 
+Documentation
+-------------
+
+The documentation for the library is [available
+online](https://smimram.github.io/ocaml-pandoc/pandoc/Pandoc/).
+
 Building filters
 ----------------
 
