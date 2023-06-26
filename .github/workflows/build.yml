@@ -13,7 +13,7 @@ jobs:
       run: |
         sudo apt-get -y install pandoc
         make -C examples test
-    - name: Documentation
+    - name: Generate documentation
       run: make doc
     - name: Deploy documentation
       uses: peaceiris/actions-gh-pages@v3
