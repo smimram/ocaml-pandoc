@@ -10,7 +10,7 @@ Documentation
 -------------
 
 The documentation for the library is [available
-online](https://smimram.github.io/ocaml-pandoc/pandoc/Pandoc/).
+online](https://smimram.github.io/ocaml-pandoc/).
 
 Building filters
 ----------------
