@@ -2,7 +2,28 @@ open Yojson.Basic
 open Util
 
 (* https://hackage.haskell.org/package/pandoc-types-1.19/docs/Text-Pandoc-Definition.html
-   https://hackage.haskell.org/package/pandoc-types-1.23/docs/Text-Pandoc-Definition.html*)
+   https://hackage.haskell.org/package/pandoc-types-1.23/docs/Text-Pandoc-Definition.html
+   https://github.com/jgm/pandoc-types/blob/master/changelog *)
+
+(** The version we are currently handling. *)
+(* TODO: get rid of this global reference at some point *)
+let current_version = ref [1;22]
+
+let compare_version v1 v2 =
+  let rec aux v1 v2 =
+    match (v1,v2) with
+    | m::v1, n::v2 ->
+      if m = n then aux v1 v2
+      else if m < n then -1
+      else 1
+    | [], _::_ -> -1
+    | _::_, [] -> 1
+    | [], [] -> 0
+  in
+  aux v1 v2
+
+(* Test whether current version is greater or equal to given version. *)
+let version_ge v = compare_version !current_version v >= 0
 
 type format = string
 
@@ -315,7 +336,7 @@ module JSON = struct
       DefinitionList (List.map to_item l)
     | "HorizontalRule" ->
       HorizontalRule
-    | "Table" ->
+    | "Table" when version_ge [1;22] ->
       let e = element_contents e in
       let a, c, cs, th, tb, tf = to_sextuple e in
       let to_col_width x =
@@ -583,11 +604,12 @@ end
 
 let of_json json =
   let json = Util.to_assoc json in
-  let blocks = Util.to_list (List.assoc "blocks" json) in
-  let blocks = List.map JSON.to_block blocks in
   let api_version = List.assoc "pandoc-api-version" json in
   let api_version = List.map Util.to_int (Util.to_list api_version) in
+  current_version := api_version;
   let meta = List.assoc "meta" json in
+  let blocks = Util.to_list (List.assoc "blocks" json) in
+  let blocks = List.map JSON.to_block blocks in
   { blocks; api_version; meta }
 
 let to_json p =
