@@ -638,13 +638,11 @@ let blocks p = p.blocks
 
 (** {2 Metadata} *)
 
-module MetaValueMap = Map.Make(String)
-
 type meta_value =
   | MetaBool of bool
   | MetaInlines of inline list
   | MetaString of string
-  | MetaMap of meta_value MetaValueMap.t
+  | MetaMap of (string * meta_value) list
   | MetaList of meta_value list
   | MetaBlocks of block list
   | MetaUnhandled of Yojson.Basic.t
@@ -665,9 +663,7 @@ let rec of_meta e =
   | "MetaMap" ->
     let m =
       Util.keys contents
-      |> List.to_seq
-      |> Seq.map (fun k -> k, of_meta (Util.member k contents))
-      |> MetaValueMap.of_seq
+      |> List.map (fun k -> k, of_meta (Util.member k contents))
     in
     MetaMap m
   | _ -> MetaUnhandled e
