@@ -638,22 +638,43 @@ let blocks p = p.blocks
 
 (** {2 Metadata} *)
 
+module MetaValueMap = Map.Make(String)
+
 type meta_value =
   | MetaBool of bool
   | MetaInlines of inline list
   | MetaString of string
+  | MetaMap of meta_value MetaValueMap.t
+  | MetaList of meta_value list
+  | MetaBlocks of block list
   | MetaUnhandled of Yojson.Basic.t
 
-let of_meta e =
+let rec of_meta e =
+  let contents = JSON.element_contents e in
   match JSON.element_type e with
-  | "MetaBool" -> MetaBool (Util.to_bool (JSON.element_contents e))
-  | "MetaInlines" -> MetaInlines (JSON.element_contents e |> Util.to_list |> List.map JSON.to_inline)
-  | "MetaString" -> MetaString (Util.to_string (JSON.element_contents e))
+  | "MetaBool" ->
+    MetaBool (Util.to_bool contents)
+  | "MetaInlines" ->
+    MetaInlines (contents |> Util.to_list |> List.map JSON.to_inline)
+  | "MetaString" ->
+    MetaString (Util.to_string contents)
+  | "MetaBlocks" ->
+    MetaBlocks (contents |> Util.to_list |> List.map JSON.to_block)
+  | "MetaList" ->
+    MetaList (Util.to_list contents |> List.map of_meta)
+  | "MetaMap" ->
+    let m =
+      Util.keys contents
+      |> List.to_seq
+      |> Seq.map (fun k -> k, of_meta (Util.member k contents))
+      |> MetaValueMap.of_seq
+    in
+    MetaMap m
   | _ -> MetaUnhandled e
 
 let meta p =
   let m = Util.to_assoc p.meta in
-  List.map (fun (k,v) -> k, of_meta v) m
+  List.map (fun (k, v) -> k, of_meta v) m
 
 let meta_bool p k =
   match List.assoc k (meta p) with

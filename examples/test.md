@@ -1,5 +1,10 @@
 ---
 title: The title
+author:
+- name: Author One
+  affiliation: University of Somewhere
+- name: Author Two
+  affiliation: University of Nowhere
 bli: Bla bla
 replacements: replacements
 replace-headers: no
