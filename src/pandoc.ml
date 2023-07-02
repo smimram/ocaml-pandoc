@@ -121,7 +121,20 @@ and table_body = TableBody of attr * row_head_columns * row list * row list
 
 and table_foot = TableFoot of attr * row list
 
-type t = { api_version : int list; meta : Yojson.Basic.t; blocks : block list }
+type meta_value =
+  | MetaBool of bool
+  | MetaInlines of inline list
+  | MetaString of string
+  | MetaMap of (string * meta_value) list
+  | MetaList of meta_value list
+  | MetaBlocks of block list
+  | MetaUnhandled of Yojson.Basic.t
+
+type t =
+  { api_version : int list
+  ; meta : (string * meta_value) list
+  ; blocks : block list
+  }
 
 module JSON = struct
   let element_type e =
@@ -598,6 +611,43 @@ module JSON = struct
       ; "citationNoteNum", `Int c.citation_note_num
       ; "citationHash", `Int c.citation_hash
       ]
+
+  let rec to_meta e =
+    let contents = element_contents e in
+    match element_type e with
+    | "MetaBool" ->
+      MetaBool (Util.to_bool contents)
+    | "MetaInlines" ->
+      MetaInlines (contents |> Util.to_list |> List.map to_inline)
+    | "MetaString" ->
+      MetaString (Util.to_string contents)
+    | "MetaBlocks" ->
+      MetaBlocks (contents |> Util.to_list |> List.map to_block)
+    | "MetaList" ->
+      MetaList (Util.to_list contents |> List.map to_meta)
+    | "MetaMap" ->
+      let m =
+        Util.keys contents
+        |> List.map (fun k -> k, to_meta (Util.member k contents))
+      in
+      MetaMap m
+    | _ -> MetaUnhandled e
+
+  let rec of_meta = function
+    | MetaBool b ->
+      element "MetaBool" (`Bool b)
+    | MetaString s ->
+      element "MetaString" (`String s)
+    | MetaInlines i ->
+      element "MetaInlines" (of_inlines i)
+    | MetaBlocks b ->
+      element "MetaBlocks" (of_blocks b)
+    | MetaList l ->
+      element "MetaList" (`List (List.map of_meta l))
+    | MetaMap m ->
+      element "MetaMap" (`Assoc (List.map (fun (k, v) -> k, of_meta v) m))
+    | MetaUnhandled e -> e
+
 end
 
 (** {2 Reading and writing} *)
@@ -607,7 +657,11 @@ let of_json json =
   let api_version = List.assoc "pandoc-api-version" json in
   let api_version = List.map Util.to_int (Util.to_list api_version) in
   current_version := api_version;
-  let meta = List.assoc "meta" json in
+  let meta =
+    List.assoc "meta" json
+    |> Util.to_assoc
+    |> List.map (fun (k, v) -> k, JSON.to_meta v)
+  in
   let blocks = Util.to_list (List.assoc "blocks" json) in
   let blocks = List.map JSON.to_block blocks in
   { blocks; api_version; meta }
@@ -615,7 +669,7 @@ let of_json json =
 let to_json p =
   let blocks = `List (List.map JSON.of_block p.blocks) in
   let api_version = `List (List.map (fun n -> `Int n) p.api_version) in
-  let meta = p.meta in
+  let meta = `Assoc (List.map (fun (k, v) -> k, JSON.of_meta v) p.meta) in
   `Assoc ["blocks", blocks; "pandoc-api-version", api_version; "meta", meta]
 
 (** JSON from markdown file. *)
@@ -638,39 +692,7 @@ let blocks p = p.blocks
 
 (** {2 Metadata} *)
 
-type meta_value =
-  | MetaBool of bool
-  | MetaInlines of inline list
-  | MetaString of string
-  | MetaMap of (string * meta_value) list
-  | MetaList of meta_value list
-  | MetaBlocks of block list
-  | MetaUnhandled of Yojson.Basic.t
-
-let rec of_meta e =
-  let contents = JSON.element_contents e in
-  match JSON.element_type e with
-  | "MetaBool" ->
-    MetaBool (Util.to_bool contents)
-  | "MetaInlines" ->
-    MetaInlines (contents |> Util.to_list |> List.map JSON.to_inline)
-  | "MetaString" ->
-    MetaString (Util.to_string contents)
-  | "MetaBlocks" ->
-    MetaBlocks (contents |> Util.to_list |> List.map JSON.to_block)
-  | "MetaList" ->
-    MetaList (Util.to_list contents |> List.map of_meta)
-  | "MetaMap" ->
-    let m =
-      Util.keys contents
-      |> List.map (fun k -> k, of_meta (Util.member k contents))
-    in
-    MetaMap m
-  | _ -> MetaUnhandled e
-
-let meta p =
-  let m = Util.to_assoc p.meta in
-  List.map (fun (k, v) -> k, of_meta v) m
+let meta p = p.meta
 
 let meta_bool p k =
   match List.assoc k (meta p) with

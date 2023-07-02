@@ -139,6 +139,18 @@ val blocks : t -> block list
 
 (** {2 Metadata} *)
 
+type meta_value =
+  | MetaBool of bool
+  | MetaInlines of inline list
+  | MetaString of string
+  | MetaMap of (string * meta_value) list
+  | MetaList of meta_value list
+  | MetaBlocks of block list
+  | MetaUnhandled of Yojson.Basic.t
+
+(** Document metadata. *)
+val meta : t -> (string * meta_value) list
+
 (** Value of a boolean metadata. *)
 val meta_bool : t -> string -> bool
 
