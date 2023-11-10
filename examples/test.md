@@ -11,6 +11,8 @@ replace-headers: no
 ...
 Hello (mp3), but not `mp3` [sc]{.smallcaps}
 
+A {{variable}} is here!
+
 ### The title
 
 ![bla](img/x.pdf)

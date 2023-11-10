@@ -1,4 +1,4 @@
-0.2.0 (unreleased)
+0.2.0 (2023-11-10)
 =====
 
 - Add `comment`, `pdf2pdf` and `replace` examples.
