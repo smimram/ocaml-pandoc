@@ -4,7 +4,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Install packages
       run: sudo apt-get -y install ocaml-nox libyojson-ocaml-dev dune ocaml-odoc
     - name: Build
