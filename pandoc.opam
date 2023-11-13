@@ -3,14 +3,15 @@ opam-version: "2.0"
 version: "0.3.0"
 synopsis: "Library to write pandoc filters"
 description:
-  "This library helps writing filters for pandoc, which is a tool to convert between textual formats notably, markdown and LaTeX"
+  "This library helps writing filters for pandoc, which is a tool to convert between textual formats notably, markdown and LaTeX."
 maintainer: ["Samuel Mimram <smimram@gmail.com>"]
 authors: ["Samuel Mimram <smimram@gmail.com>"]
-license: "LGPL-2.1"
+license: "LGPL-2.1-or-later"
 homepage: "https://github.com/smimram/ocaml-pandoc"
 bug-reports: "https://github.com/smimram/ocaml-pandoc/issues"
 depends: [
   "dune" {>= "2.0"}
+  "ocaml" {>= "4.08.0"}
   "yojson" {>= "1.4.0"}
 ]
 build: [
