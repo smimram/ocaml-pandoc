@@ -62,3 +62,6 @@ Table:  Demonstration of __simple table__ syntax.
 
 ```{include="include.txt" from=2 to=-1}
 ```
+
+```{include="include.txt" from="B" to="F"}
+```

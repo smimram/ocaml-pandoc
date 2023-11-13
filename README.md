@@ -50,16 +50,29 @@ convenience (or because I needed those).
   !include "file"
   ```
   
-  by the contents of the file `file` and
+  by the contents of the file `file`, it replaces
   
   ~~~
   ```{.ocaml include="test.ml" from=2 to=5}
   ```
   ~~~
   
-  by the contents of the file `test.ml` between lines 2 and 5 (negative values
-  for `to` are counted from the end of the file). Useful for including small
-  code snippets.
+  by the contents of the file `test.ml` between lines 2 and 5, it replaces
+
+  ~~~
+  ```{.ocaml include="test.ml" from=2 to=-1}
+  ```
+  ~~~
+  
+  by the content from line 2 to last but one line, it replaces
+
+  ~~~
+  ```{.ocaml include="test.ml" from="BEGIN" to="TO"}
+  ```
+  ~~~
+  
+  by the content between lines containing "BEGIN" and "END", excluded. Useful
+  for including small code snippets.
 - `pandoc-inspect`: acts as the identity plugin, but prints the JSON output
   given by pandoc on the standard error. Useful for debugging and adding missing
   features to the library.

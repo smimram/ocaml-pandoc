@@ -1,9 +1,24 @@
 (** Pandoc extension to include files. *)
 
-let error n =
+module String = struct
+  include String
+
+  (* TODO: more efficient version *)
+  let contains_substring l s =
+    let n = String.length s in
+    try
+      for i = 0 to String.length l - n do
+        if String.sub l i n = s then raise Exit
+      done;
+      false
+    with
+    | Exit -> true
+end
+
+let error fname n =
   Printf.ksprintf
     (fun s ->
-       output_string stderr (s ^ "\n");
+       Printf.eprintf "pandoc-include error in file `%s`: %s\n%!" fname s;
        exit n)
 
 let () =
@@ -18,27 +33,68 @@ let () =
        ``` *)
     | CodeBlock ((ident, classes, keyvals), _) when List.mem_assoc "include" keyvals ->
       let fname = List.assoc "include" keyvals in
+      let error n = error fname n in
+      let from =
+        match List.assoc_opt "from" keyvals with
+        | None -> `Int 0
+        | Some from ->
+            match int_of_string_opt from with
+            | Some from -> `Int from
+            | None -> `String from
+      in
+      let last =
+        match List.assoc_opt "to" keyvals with
+        | None -> `Last
+        | Some last ->
+          match int_of_string_opt last with
+          | Some last -> `Int last
+          | None -> `String last
+      in
       let contents =
         if not (Sys.file_exists fname) then
-          error 1 "pandoc-include: could not find file `%s`." fname
+          error 1 "Could not find file."
         else
-          let nb_lines () =
-            let ans = ref 0 in
+          let from = ref from in
+          let last = ref last in
+          let lines = ref 0 in
+          (
             let ic = open_in fname in
             try
               while true do
-                ignore (input_line ic);
-                incr ans
-              done;
-              0
+                let l = input_line ic in
+                (
+                  match !from with
+                  | `String s ->
+                    if String.contains_substring l s then from := `Int (!lines + 1)
+                  | _ -> ()
+                );
+                (
+                  match !last with
+                  | `String s ->
+                    if String.contains_substring l s then last := `Int (!lines - 1)
+                  | _ -> ()
+                );
+                incr lines
+              done
             with
-            | End_of_file -> !ans
+            | End_of_file -> close_in ic
+          );
+          let lines = !lines in
+          let from =
+            match !from with
+            | `Int n -> n
+            | `String s -> error 2 "Could not find string `%s` for first line." s
           in
-          let from = try int_of_string (List.assoc "from" keyvals) with Not_found -> 0 in
-          let last = try int_of_string (List.assoc "to" keyvals) with Not_found -> max_int in
-          let from = if from < 0 then nb_lines () + from else from in
-          let last = if last < 0 then nb_lines () - 1 + last else last in
-
+          let last =
+            match !last with
+            | `Int n -> n
+            | `Last -> lines - 1
+            | `String s -> error 2 "Could not find string `%s` for last line." s
+          in
+          let from = if from < 0 then lines + from else from in
+          let last = if last < 0 then lines - 1 + last else last in
+          if from < 0 || from >= lines then error 3 "First line (%d) out of range." from;
+          if last < 0 || last >= lines then error 3 "Last line (%d) out of range." last;
           try
             let ic = open_in fname in
             let ans = ref "" in
@@ -46,17 +102,16 @@ let () =
             try
               while true do
                 let l = input_line ic in
-                if !line >= from && !line <= last then ans := !ans ^ l ^ "\n";
+                if !line > last then raise Exit;
+                if !line >= from then ans := !ans ^ l ^ "\n";
                 incr line
               done;
               ""
             with
-            | End_of_file -> !ans
+            | End_of_file | Exit -> !ans
           with
-          | Sys_error _ ->
-            let err = "ERROR: file \""^fname^"\" not found!" in
-            prerr_endline err;
-            err
+          | Sys_error _ as err ->
+            error 1 "System error: %s." (Printexc.to_string err);
       in
       Some [Pandoc.CodeBlock ((ident, classes, keyvals), contents)]
     | _ -> None
