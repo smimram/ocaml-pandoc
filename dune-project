@@ -1,4 +1,4 @@
-(lang dune 2.0)
+(lang dune 3.0)
 (version 0.3.0)
 (name pandoc)
 (source (github smimram/ocaml-pandoc))
