@@ -22,17 +22,25 @@ let error fname n =
        exit n)
 
 let () =
+  let directory = ref "" in
+  Arg.parse
+    [
+      "--directory", Arg.Set_string directory, "Use this as base directory for included files."
+    ]
+    ignore
+    "pandoc-include [options]";
   let p = Pandoc.of_json (Yojson.Basic.from_channel stdin) in
   let rec f = function
     (* !include "file" *)
-    | Pandoc.Para [Str "!include"; _; Quoted (DoubleQuote, [Str s])] ->
-      let p = Pandoc.of_md_file s in
+    | Pandoc.Para [Str "!include"; _; Quoted (DoubleQuote, [Str fname])] ->
+      let fname = Filename.concat !directory fname in
+      let p = Pandoc.of_md_file fname in
       let p = Pandoc.map_blocks f p in
       Some (Pandoc.blocks p)
     (* ```{.blabla include="file"}
        ``` *)
     | CodeBlock ((ident, classes, keyvals), _) when List.mem_assoc "include" keyvals ->
-      let fname = List.assoc "include" keyvals in
+      let fname = List.assoc "include" keyvals |> Filename.concat !directory in
       let error n = error fname n in
       let from =
         match List.assoc_opt "from" keyvals with
