@@ -24,7 +24,7 @@
  (description "This pandoc filter adds non-breaking spaces after the abbreviations listed in the `abbreviations` file.")
  (depends
   (ocaml (>= 4.04.0))
-  (pandoc (>= 0.1.0))
+  (pandoc (= :version))
  )
 )
 
@@ -33,7 +33,7 @@
  (synopsis "Pandoc filter to have LaTeX cross-references")
  (description "This pandoc filter replaces #chap: and #sec: references to cref invokations.")
  (depends
-  (pandoc (>= 0.1.0))
+  (pandoc (= :version))
  )
 )
 
@@ -42,7 +42,7 @@
  (synopsis "Pandoc filter to include other files")
  (description "This pandoc filter allows the inclusion of other markdown files into markdown.")
  (depends
-  (pandoc (>= 0.1.0))
+  (pandoc (= :version))
  )
 )
 
@@ -51,7 +51,7 @@
  (synopsis "Pandoc filter to inspect pandoc's JSON")
  (description "This pandoc filter prints pandoc's internal JSON on the standard error.")
  (depends
-  (pandoc (>= 0.1.0))
+  (pandoc (= :version))
  )
 )
 
@@ -60,7 +60,7 @@
  (synopsis "Pandoc filter to change extension of pdf images to png")
  (description "This pandoc filter changes the extension of images from pdf to png.")
  (depends
-  (pandoc (>= 0.1.0))
+  (pandoc (= :version))
  )
 )
 
@@ -69,7 +69,7 @@
  (synopsis "Pandoc filter to remove comments")
  (description "This pandoc filter removes LaTeX-style comments (line starting with %).")
  (depends
-  (pandoc (>= 0.1.0))
+  (pandoc (= :version))
  )
 )
 
@@ -78,6 +78,6 @@
  (synopsis "Pandoc filter to replace words")
  (description "This pandoc filter replaces words by others (useful to ensure that the case is respected for instance).")
  (depends
-  (pandoc (>= 0.1.0))
+  (pandoc (= :version))
  )
 )
