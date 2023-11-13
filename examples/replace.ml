@@ -5,18 +5,6 @@ open Pandoc
 module String = struct
   include String
 
-  let find p s =
-    let ans = ref (-1) in
-    try
-      for i = 0 to String.length s - 1 do
-        if p s.[i] then (ans := i; raise Exit)
-      done;
-      raise Not_found
-    with Exit -> !ans
-
-  let split_at i s =
-    String.sub s 0 i, String.sub s i (String.length s - i)
-
   let split_on_first_char c s =
     try
       let n = String.index s c in
