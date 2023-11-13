@@ -8,7 +8,8 @@ author:
 bli: Bla bla
 replacements: replacements
 replace-headers: no
-...
+---
+
 Hello (mp3), but not `mp3` [sc]{.smallcaps}
 
 A {{variable}} is here!
@@ -56,3 +57,8 @@ this is code
       1     1          1             1
 
 Table:  Demonstration of __simple table__ syntax.
+
+### Include
+
+```{include="include.txt" from=2 to=-1}
+```
