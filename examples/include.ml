@@ -14,9 +14,10 @@ let () =
       let fname = List.assoc "include" keyvals in
       let contents =
         if not (Sys.file_exists fname) then
-          let err = "FILE NOT FOUND: " ^ fname in
-          Printf.eprintf "%s\n%!" err;
-          err
+          (
+            Printf.eprintf "pandoc-include: could not find file `%s`.\n%!" fname;
+            exit 1
+          )
         else
           let nb_lines () =
             let ans = ref 0 in

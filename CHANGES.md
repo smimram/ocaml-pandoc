@@ -2,6 +2,7 @@
 =====
 
 - Switch to dune 3.0.
+- pandoc-include now fails if the file to include does not exist.
 
 0.2.0 (2023-11-10)
 =====
