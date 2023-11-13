@@ -72,7 +72,8 @@ convenience (or because I needed those).
   ~~~
   
   by the content between lines containing "BEGIN" and "END", excluded. Useful
-  for including small code snippets.
+  for including small code snippets delimited by comments such as `(* BEGIN *)`
+  and `(* END *)`.
 - `pandoc-inspect`: acts as the identity plugin, but prints the JSON output
   given by pandoc on the standard error. Useful for debugging and adding missing
   features to the library.
