@@ -1,5 +1,11 @@
 (** Pandoc extension to include files. *)
 
+let error n =
+  Printf.ksprintf
+    (fun s ->
+       output_string stderr (s ^ "\n");
+       exit n)
+
 let () =
   let p = Pandoc.of_json (Yojson.Basic.from_channel stdin) in
   let rec f = function
@@ -14,10 +20,7 @@ let () =
       let fname = List.assoc "include" keyvals in
       let contents =
         if not (Sys.file_exists fname) then
-          (
-            Printf.eprintf "pandoc-include: could not find file `%s`.\n%!" fname;
-            exit 1
-          )
+          error 1 "pandoc-include: could not find file `%s`." fname
         else
           let nb_lines () =
             let ans = ref 0 in
