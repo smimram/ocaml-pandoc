@@ -14,7 +14,7 @@
  (description "This library helps writing filters for pandoc, which is a tool to convert between textual formats notably, markdown and LaTeX.")
  (depends
   (ocaml (>= 4.08.0))
-  (yojson (>= 1.4.0))
+  (yojson (>= 2.0.0))
  )
 )
 
