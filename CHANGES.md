@@ -1,4 +1,4 @@
-0.3.0 (unreleased)
+0.2.1 (unreleased)
 =====
 
 - pandoc-include now fails if the file to include does not exist.
