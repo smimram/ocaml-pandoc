@@ -10,11 +10,12 @@ license: "LGPL-2.1-or-later"
 homepage: "https://github.com/smimram/ocaml-pandoc"
 bug-reports: "https://github.com/smimram/ocaml-pandoc/issues"
 depends: [
-  "dune" {>= "2.0"}
+  "dune" {>= "2.7"}
   "pandoc" {= version}
+  "odoc" {with-doc}
 ]
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
