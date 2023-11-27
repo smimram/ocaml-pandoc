@@ -16,8 +16,20 @@ jobs:
         make -C examples test
     - name: Generate documentation
       run: make doc
-    - name: Deploy documentation
-      uses: peaceiris/actions-gh-pages@v3
+    - name: Upload website artifact
+      uses: actions/upload-pages-artifact@v2
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./_build/default/_doc/_html
+        path: ./_build/default/_doc/_html
+  deploy:
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v2
