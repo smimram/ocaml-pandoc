@@ -1,5 +1,5 @@
 (lang dune 2.7)
-(version 0.2.1)
+(version 0.2.2)
 (name pandoc)
 (source (github smimram/ocaml-pandoc))
 (license LGPL-2.1-or-later)
