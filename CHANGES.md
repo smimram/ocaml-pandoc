@@ -1,4 +1,4 @@
-0.2.1 (unreleased)
+0.2.1 (2023-12-15)
 =====
 
 - pandoc-include: now fails if the file to include does not exist.
