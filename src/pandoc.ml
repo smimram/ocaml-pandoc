@@ -786,3 +786,7 @@ let map_blocks f p = map ~block:f p
 (** Map a function to every top-level block. *)
 let map_top_blocks f p =
   replace_blocks (fun blocks -> List.flatten (List.map f blocks)) p
+
+let set_meta k v p =
+  let meta = List.remove_assoc k (meta p) in
+  { p with meta = (k, v) :: meta }
