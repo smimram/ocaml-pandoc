@@ -710,7 +710,7 @@ let meta_string p k =
   | MetaString s -> s
   | _ -> raise Not_found
 
-let set_meta v p k =
+let set_meta p k v =
   let meta = List.remove_assoc k (meta p) in
   { p with meta = (k, v) :: meta }
 
