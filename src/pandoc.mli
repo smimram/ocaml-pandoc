@@ -157,6 +157,9 @@ val meta_bool : t -> string -> bool
 (** Value of a string metadata. *)
 val meta_string : t -> string -> string
 
+(** Add a metadata value *) 
+val set_meta :  t -> string -> meta_value -> t
+
 (** {2 Mapping functions} *)
 
 (** General mapping function which maps a function on blocks and a function on

@@ -710,6 +710,10 @@ let meta_string p k =
   | MetaString s -> s
   | _ -> raise Not_found
 
+let set_meta v p k =
+  let meta = List.remove_assoc k (meta p) in
+  { p with meta = (k, v) :: meta }
+
 (** {2 Transforming} *)
 
 (** Change the list of blocks. *)
