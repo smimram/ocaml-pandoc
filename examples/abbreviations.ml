@@ -5,12 +5,15 @@
 open Pandoc
 
 let abbreviations fname =
-  let ic = open_in fname in
-  let n = in_channel_length ic in
-  let s = Bytes.create n in
-  really_input ic s 0 n;
-  close_in ic;
-  let s = Bytes.unsafe_to_string s in
+  let s =
+    In_channel.with_open_bin fname
+      (fun ic ->
+        let n = in_channel_length ic in
+        let s = Bytes.create n in
+        really_input ic s 0 n;
+        Bytes.unsafe_to_string s
+      )
+  in
   let l = String.split_on_char '\n' s in
   let l = List.filter (fun s -> s <> "") l in
   List.append l (List.map (fun s -> "(" ^ s) l)

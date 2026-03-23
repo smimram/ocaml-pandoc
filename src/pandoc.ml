@@ -675,12 +675,13 @@ let to_json p =
 (** JSON from markdown file. *)
 let json_of_md_file fname =
   let tmp = Filename.temp_file "pandoc" ".json" in
-  let cmd = Printf.sprintf "pandoc -f markdown -t json %s -o %s" fname tmp in
-  let n = Sys.command cmd in
-  assert (n = 0);
-  let json = from_file tmp in
-  Sys.remove tmp;
-  json
+  Fun.protect ~finally:(fun () -> Sys.remove tmp)
+    (fun () ->
+      let cmd = Filename.quote_command "pandoc" ["-f"; "markdown"; "-t"; "json"; fname; "-o"; tmp] in
+      let n = Sys.command cmd in
+      assert (n = 0);
+      from_file tmp
+    )
 
 let of_md_file fname =
   let json = json_of_md_file fname in

@@ -65,28 +65,26 @@ let () =
           let from = ref from in
           let last = ref last in
           let lines = ref 0 in
-          (
-            let ic = open_in fname in
-            try
-              while true do
-                let l = input_line ic in
-                (
-                  match !from with
-                  | `String s ->
-                    if String.contains_substring l s then from := `Int (!lines + 1)
-                  | _ -> ()
-                );
-                (
-                  match !last with
-                  | `String s ->
-                    if String.contains_substring l s then last := `Int (!lines - 1)
-                  | _ -> ()
-                );
-                incr lines
-              done
-            with
-            | End_of_file -> close_in ic
-          );
+          In_channel.with_open_bin fname
+            (fun ic ->
+              try
+                while true do
+                  let l = input_line ic in
+                  (
+                    match !from with
+                    | `String s -> if String.contains_substring l s then from := `Int (!lines + 1)
+                    | _ -> ()
+                  );
+                  (
+                    match !last with
+                    | `String s -> if String.contains_substring l s then last := `Int (!lines - 1)
+                    | _ -> ()
+                  );
+                  incr lines
+                done
+              with
+              | End_of_file -> ()
+            );
           let lines = !lines in
           let from =
             match !from with
@@ -104,19 +102,21 @@ let () =
           if from < 0 || from >= lines then error 3 "First line (%d) out of range." from;
           if last < 0 || last >= lines then error 3 "Last line (%d) out of range." last;
           try
-            let ic = open_in fname in
-            let ans = ref "" in
-            let line = ref 0 in
-            try
-              while true do
-                let l = input_line ic in
-                if !line > last then raise Exit;
-                if !line >= from then ans := !ans ^ l ^ "\n";
-                incr line
-              done;
-              ""
-            with
-            | End_of_file | Exit -> close_in ic; !ans
+            In_channel.with_open_bin fname
+              (fun ic ->
+                let ans = ref "" in
+                let line = ref 0 in
+                try
+                  while true do
+                    let l = input_line ic in
+                    if !line > last then raise Exit;
+                    if !line >= from then ans := !ans ^ l ^ "\n";
+                    incr line
+                  done;
+                  ""
+                with
+                | End_of_file | Exit -> !ans
+              )
           with
           | Sys_error _ as err ->
             error 1 "System error: %s." (Printexc.to_string err);
