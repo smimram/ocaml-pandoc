@@ -2,6 +2,7 @@
 =====
 
 - Add `set_meta` (#5).
+- Fix fd leak in include.
 
 0.2.1 (2023-12-15)
 =====

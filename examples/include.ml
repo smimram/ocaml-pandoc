@@ -116,7 +116,7 @@ let () =
               done;
               ""
             with
-            | End_of_file | Exit -> !ans
+            | End_of_file | Exit -> close_in ic; !ans
           with
           | Sys_error _ as err ->
             error 1 "System error: %s." (Printexc.to_string err);
