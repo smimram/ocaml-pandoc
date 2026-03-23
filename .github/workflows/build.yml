@@ -17,7 +17,7 @@ jobs:
     - name: Generate documentation
       run: make doc
     - name: Upload website artifact
-      uses: actions/upload-pages-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         path: ./_build/default/_doc/_html
   deploy:
@@ -32,4 +32,4 @@ jobs:
     steps:
       - name: Deploy website
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
