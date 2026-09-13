@@ -3,7 +3,7 @@
 module String = struct
   include String
 
-  (* TODO: more efficient version *)
+  (* TODO: more efficient version, String.find_first would be the way to go but would require OCaml >= 5.5 *)
   let contains_substring l s =
     let n = String.length s in
     try
