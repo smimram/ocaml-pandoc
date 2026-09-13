@@ -10,7 +10,7 @@ license: "LGPL-2.1-or-later"
 homepage: "https://github.com/smimram/ocaml-pandoc"
 bug-reports: "https://github.com/smimram/ocaml-pandoc/issues"
 depends: [
-  "dune" {>= "2.7"}
+  "dune" {>= "3.14"}
   "ocaml" {>= "4.08.0"}
   "yojson" {>= "2.0.0"}
   "odoc" {with-doc}

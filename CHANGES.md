@@ -3,6 +3,7 @@
 
 - Add `set_meta` (#5).
 - Fix fd leak in include.
+- Update to dune 3.14.
 
 0.2.1 (2023-12-15)
 =====
